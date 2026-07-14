@@ -27,13 +27,13 @@
                         class="text-neutral-600 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-neutral-100"
                         asChild
                     >
-                        {#snippet children(props)}
+                        {#snippet child({ props })}
                             <a
                                 {...props}
                                 href={toUrl(item.href)}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                class={props.class}
+                                class={props?.class}
                             >
                                 {#if item.icon}
                                     <item.icon class="size-4 shrink-0" />

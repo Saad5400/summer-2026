@@ -30,11 +30,11 @@
                     isActive={url.isCurrentUrl(item.href, url.currentUrl)}
                     tooltip={item.title}
                 >
-                    {#snippet children(props)}
+                    {#snippet child({ props })}
                         <Link
                             {...props}
                             href={toUrl(item.href)}
-                            class={props.class}
+                            class={props?.class}
                         >
                             {#if item.icon}
                                 <item.icon class="size-4 shrink-0" />

@@ -1,8 +1,7 @@
 <script lang="ts">
     import { Link } from '@inertiajs/svelte';
-    import BookOpen from 'lucide-svelte/icons/book-open';
-    import FolderGit2 from 'lucide-svelte/icons/folder-git-2';
     import LayoutGrid from 'lucide-svelte/icons/layout-grid';
+    import ArrowLeftRight from 'lucide-svelte/icons/arrow-left-right';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -29,24 +28,18 @@
 
     const mainNavItems: NavItem[] = [
         {
-            title: 'Dashboard',
+            title: 'الرئيسية',
             href: dashboard(),
             icon: LayoutGrid,
         },
+        {
+            title: 'المعاملات',
+            href: '/transactions',
+            icon: ArrowLeftRight,
+        },
     ];
 
-    const footerNavItems: NavItem[] = [
-        {
-            title: 'Repository',
-            href: 'https://github.com/laravel/svelte-starter-kit',
-            icon: FolderGit2,
-        },
-        {
-            title: 'Documentation',
-            href: 'https://laravel.com/docs/starter-kits#svelte',
-            icon: BookOpen,
-        },
-    ];
+    const footerNavItems: NavItem[] = [];
 </script>
 
 <Sidebar collapsible="icon" variant="inset">
@@ -54,11 +47,11 @@
         <SidebarMenu>
             <SidebarMenuItem>
                 <SidebarMenuButton size="lg" asChild>
-                    {#snippet children(props)}
+                    {#snippet child({ props })}
                         <Link
                             {...props}
                             href={toUrl(dashboard())}
-                            class={props.class}
+                            class={props?.class}
                         >
                             <AppLogo />
                         </Link>
