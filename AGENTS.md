@@ -80,3 +80,7 @@
 - Laravel
 - Inertia (laravel svelte template)
 - TailwindCSS
+
+# Design system
+
+read DESIGN.md file
