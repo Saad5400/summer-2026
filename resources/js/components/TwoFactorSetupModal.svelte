@@ -132,7 +132,7 @@
                     <div class="absolute inset-0 grid grid-cols-5 opacity-50">
                         {#each { length: 5 } as _, i (i)}
                             <div
-                                class="border-r border-border last:border-r-0"
+                                class="border-e border-border last:border-e-0"
                             ></div>
                         {/each}
                     </div>
@@ -194,7 +194,7 @@
                         </div>
                     </div>
 
-                    <div class="flex w-full items-center space-x-5">
+                    <div class="flex w-full items-center gap-5">
                         <Button class="w-full" onclick={handleModalNextStep}>
                             {modalConfig.buttonText}
                         </Button>
@@ -212,7 +212,7 @@
                     </div>
 
                     <div
-                        class="flex w-full items-center justify-center space-x-2"
+                        class="flex w-full items-center justify-center gap-2"
                     >
                         <div
                             class="flex w-full items-stretch overflow-hidden rounded-xl border border-border"
@@ -236,7 +236,7 @@
                                             twoFactorAuth.state
                                                 .manualSetupKey || '',
                                         )}
-                                    class="relative block h-auto border-l border-border px-3 hover:bg-muted"
+                                    class="relative block h-auto border-s border-border px-3 hover:bg-muted"
                                 >
                                     {#if copied}
                                         <Check class="w-4 text-green-500" />
@@ -284,7 +284,7 @@
                                 />
                             </div>
 
-                            <div class="flex w-full items-center space-x-5">
+                            <div class="flex w-full items-center gap-5">
                                 <Button
                                     type="button"
                                     variant="outline"

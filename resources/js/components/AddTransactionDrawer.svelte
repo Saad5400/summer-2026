@@ -80,7 +80,7 @@
       onclick={close}
     ></button>
     <div
-      class="fixed inset-y-0 right-0 w-full max-w-sm flex flex-col gap-5 overflow-y-auto border-l bg-background p-6 shadow-lg"
+      class="fixed inset-y-0 end-0 w-full max-w-sm flex flex-col gap-5 overflow-y-auto border-s bg-background p-6 shadow-lg"
       in:fly={{ x: 320, duration: 260, opacity: 1 }}
     >
       <div class="flex items-center justify-between">

@@ -90,7 +90,7 @@
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                class="mr-2 h-9 w-9"
+                                class="me-2 h-9 w-9"
                                 onclick={props.onclick}
                                 aria-expanded={props['aria-expanded']}
                             >
@@ -100,7 +100,7 @@
                     </SheetTrigger>
                     <SheetContent side="left" class="w-[300px] p-6">
                         <SheetTitle class="sr-only">Navigation menu</SheetTitle>
-                        <SheetHeader class="flex justify-start text-left">
+                        <SheetHeader class="flex justify-start text-start">
                             <AppLogoIcon
                                 class="size-6 fill-current text-black dark:text-white"
                             />
@@ -132,7 +132,7 @@
                                         href={toUrl(item.href)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        class="flex items-center space-x-2 text-sm font-medium"
+                                        class="flex items-center gap-2 text-sm font-medium"
                                     >
                                         {#if item.icon}
                                             <item.icon class="h-5 w-5" />
@@ -152,9 +152,9 @@
 
             <!-- Desktop Menu -->
             <div class="hidden h-full lg:flex lg:flex-1">
-                <NavigationMenu class="ml-10 flex h-full items-stretch">
+                <NavigationMenu class="ms-10 flex h-full items-stretch">
                     <NavigationMenuList
-                        class="flex h-full items-stretch space-x-2"
+                        class="flex h-full items-stretch gap-2"
                     >
                         {#each mainNavItems as item (toUrl(item.href))}
                             <NavigationMenuItem
@@ -170,13 +170,13 @@
                                     href={toUrl(item.href)}
                                 >
                                     {#if item.icon}
-                                        <item.icon class="mr-2 h-4 w-4" />
+                                        <item.icon class="me-2 h-4 w-4" />
                                     {/if}
                                     {item.title}
                                 </Link>
                                 {#if url.isCurrentUrl(item.href, url.currentUrl)}
                                     <div
-                                        class="absolute bottom-0 left-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
+                                        class="absolute bottom-0 start-0 h-0.5 w-full translate-y-px bg-black dark:bg-white"
                                     ></div>
                                 {/if}
                             </NavigationMenuItem>
@@ -185,8 +185,8 @@
                 </NavigationMenu>
             </div>
 
-            <div class="ml-auto flex items-center space-x-2">
-                <div class="relative flex items-center space-x-1">
+            <div class="ms-auto flex items-center gap-2">
+                <div class="relative flex items-center gap-1">
                     <Button
                         variant="ghost"
                         size="icon"
@@ -197,7 +197,7 @@
                         />
                     </Button>
 
-                    <div class="hidden space-x-1 lg:flex">
+                    <div class="hidden gap-1 lg:flex">
                         {#each rightNavItems as item (toUrl(item.href))}
                             <TooltipProvider delayDuration={0}>
                                 <Tooltip>

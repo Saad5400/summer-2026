@@ -19,8 +19,8 @@
     const { open, setOpen } = getContext<SheetContext>(SHEET_CONTEXT);
 
     const sideClasses: Record<string, string> = {
-        right: 'inset-y-0 right-0',
-        left: 'inset-y-0 left-0',
+        right: 'inset-y-0 end-0',
+        left: 'inset-y-0 start-0',
         top: 'inset-x-0 top-0',
         bottom: 'inset-x-0 bottom-0',
     };
@@ -68,7 +68,7 @@
         >
             <button
                 type="button"
-                class="ring-offset-background focus-visible:ring-ring absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none"
+                class="ring-offset-background focus-visible:ring-ring absolute top-4 end-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-hidden disabled:pointer-events-none"
                 aria-label="Close"
                 onclick={close}
             >

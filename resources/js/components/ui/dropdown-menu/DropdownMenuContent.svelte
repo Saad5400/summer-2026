@@ -21,16 +21,16 @@
     const { open, setOpen } = getContext<DropdownMenuContext>(DROPDOWN_MENU_CONTEXT);
 
     const alignClasses: Record<string, string> = {
-        start: 'left-0',
-        center: 'left-1/2 -translate-x-1/2',
-        end: 'right-0',
+        start: 'start-0',
+        center: 'start-1/2 -translate-x-1/2',
+        end: 'end-0',
     };
 
     const sideClasses: Record<string, string> = {
         bottom: 'top-full',
         top: 'bottom-full',
-        left: 'right-full',
-        right: 'left-full',
+        left: 'end-full',
+        right: 'start-full',
     };
 
     const close = () => setOpen(false);

@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>شرح Tailwind CSS للمبتدئين</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/tokyo-night-light.min.css">
+<style>
+  :root {
+    --bg:        #FBF9F6;
+    --surface:   #FFFFFF;
+    --ink:       #1B1B18;
+    --muted:     #6A6A62;
+    --accent:    #0D6B5D;
+    --accent-bg: #EDF6F3;
+    --code-bg:   #F2F0EC;
+    --border:    #E8E3DC;
+    --red-bg:    #FDE8E8;
+    --red-fg:    #C53030;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    font-size: 18px;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: system-ui, 'Segoe UI', Tahoma, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── Header ── */
+  .hero {
+    padding: 40px 0 20px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 48px;
+  }
+
+  .hero h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .hero .eyebrow {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .hero p {
+    font-size: 1.05rem;
+    color: var(--muted);
+    margin-top: 12px;
+    max-width: 56ch;
+  }
+
+  /* ── Sections ── */
+  .section { margin-bottom: 56px; }
+
+  .section h2 {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .section > p {
+    color: var(--muted);
+    margin-bottom: 20px;
+    max-width: 58ch;
+  }
+
+  /* ── Demo container ── */
+  .demo-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .demo-visual {
+    padding: 28px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .demo-visual.column { flex-direction: column; }
+
+  .demo-code {
+    background: var(--code-bg);
+    border-top: 1px solid var(--border);
+    padding: 16px 20px;
+    font-size: 0.85rem;
+    direction: ltr;
+    text-align: left;
+    overflow-x: auto;
+  }
+
+  .demo-code pre {
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+
+  .demo-code code {
+    background: transparent;
+    padding: 0;
+  }
+
+  /* ── Explanation block ── */
+  .explain {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .explain-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+
+  .explain-card h4 {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .explain-card h4 .badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 99px;
+  }
+
+  .badge-class { background: #E6F0FF; color: #1A56DB; }
+  .badge-result { background: var(--accent-bg); color: var(--accent); }
+
+  .explain-card p {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── Visual helpers ── */
+  .vis-block {
+    display: inline-block;
+    border: 1px dashed #ccc;
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    background: #fff;
+  }
+
+  .vis-flex-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .vis-flex-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .vis-item {
+    background: #E6F0FF;
+    border: 1px solid #BBD4F7;
+    border-radius: 6px;
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .vis-item.red { background: var(--red-bg); border-color: #F5C6C6; }
+
+  .vis-spacer {
+    display: inline-block;
+    background: repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 6px);
+  }
+
+  .legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .legend .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-pad   { background: #D4E6D4; }
+  .dot-gap   { background: #FFD8A8; }
+  .dot-item  { background: #E6F0FF; }
+
+  .callout {
+    background: var(--accent-bg);
+    border-right: 3px solid var(--accent);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 0.92rem;
+    line-height: 1.75;
+    margin-top: 20px;
+  }
+
+  .callout strong { color: var(--accent); }
+
+  /* ── Result card (the original they asked about) ── */
+  .result-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    background: #fff;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+
+  .result-card .icon-box {
+    display: flex;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #FDE8E8;
+  }
+
+  .result-card .icon-box svg {
+    width: 20px;
+    height: 20px;
+    color: #C53030;
+  }
+
+  .result-card .text-group .label {
+    font-size: 0.875rem;
+    color: #6A6A62;
+  }
+
+  .result-card .text-group .value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Comparison layout ── */
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  .comparison .side {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .comparison .side .label-bar {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 8px 14px;
+    text-align: center;
+  }
+
+  .label-bad  { background: #FFF5F5; color: var(--red-fg); }
+  .label-good { background: var(--accent-bg); color: var(--accent); }
+
+  .comparison .side .preview {
+    padding: 20px 16px;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── Properties table ── */
+  .prop-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 12px;
+  }
+
+  .prop-table th {
+    text-align: right;
+    font-weight: 600;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+    background: var(--code-bg);
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+  }
+
+  .prop-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .prop-table tr:last-child td { border-bottom: none; }
+
+  .prop-table code {
+    background: var(--code-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+    direction: ltr;
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .prop-table .meaning {
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  /* ── Footer ── */
+  .footer {
+    margin-top: 64px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* ── Visual card shapes ── */
+  .card-demo {
+    width: 130px;
+    height: 70px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .card-demo.r-sm  { border-radius: 4px; }
+  .card-demo.r-md  { border-radius: 8px; }
+  .card-demo.r-lg  { border-radius: 12px; }
+  .card-demo.r-xl  { border-radius: 16px; }
+
+  .card-demo.p-0  { padding: 0; }
+  .card-demo.p-2  { padding: 8px; }
+  .card-demo.p-4  { padding: 16px; }
+  .card-demo.p-6  { padding: 24px; }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    html { font-size: 16px; }
+    .page { padding: 32px 16px 56px; }
+    .hero h1 { font-size: 1.55rem; }
+    .explain { grid-template-columns: 1fr; }
+    .comparison { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<main class="page">
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- HERO                                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <span class="eyebrow">شرح مبسط للمبتدئين</span>
+  <h1>كيف تقرأ كود HTML + Tailwind CSS</h1>
+  <p>
+    هذا المستند يشرح كل قطعة في كود بطاقة المصروفات سطراً بسطر،
+    من الصفر. لا تحتاج أي خبرة سابقة في HTML أو CSS.
+  </p>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- THE ORIGINAL COMPONENT                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>البطاقة الأصلية — هذا ما نريد فهمه</h2>
+  <p>هذا هو الكود الكامل. الهدف أن تفهم ماذا يفعل كل جزء منه.</p>
+
+  <div class="demo-box">
+    <div class="demo-visual">
+      <div class="result-card">
+        <div class="icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7 7 10 10"></path>
+            <path d="M17 7v10H7"></path>
+          </svg>
+        </div>
+        <div class="text-group">
+          <div class="label">المصروفات</div>
+          <div class="value">٢٬٥٤٠ ر.س</div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-code">
+      <pre><code class="language-html">&lt;div class="flex items-center gap-4 rounded-xl border p-4"&gt;
+  &lt;div class="flex size-10 shrink-0 items-center justify-center
+              rounded-lg bg-red-100 dark:bg-red-900/30"&gt;
+    &lt;svg ... class="size-5 text-red-600 dark:text-red-400"&gt;...&lt;/svg&gt;
+  &lt;/div&gt;
+
+  &lt;div&gt;
+    &lt;p class="text-sm text-muted-foreground"&gt;المصروفات&lt;/p&gt;
+    &lt;p class="text-xl font-semibold tabular-nums"&gt;٢٬٥٤٠ ر.س&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  1: FLEX - LAYOUT                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>١. التخطيط — flex, items-center, gap</h2>
+  <p>
+    هذه الثلاث كلاسات هي العمود الفقري للتخطيط. تحدد كيف تصطف العناصر داخل
+    بعضها.
+  </p>
+
+  <!-- flex -->
+  <div class="demo-box" style="margin-bottom: 16px;">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:8px;"><code>flex</code> — يصطف العناصر أفقياً</div>
+      <div class="vis-flex-row">
+        <div class="vis-item">العنصر ١</div>
+        <div class="vis-item">العنصر ٢</div>
+        <div class="vis-item">العنصر ٣</div>
+      </div>
+      <div style="margin-top: 14px;font-weight:700;font-size:0.9rem;margin-bottom:8px;">بدون <code>flex</code> — يصطفون عمودياً (هذا السلوك الافتراضي)</div>
+      <div style="display:block;">
+        <div class="vis-item" style="display:block;margin-bottom:6px;">العنصر ١</div>
+        <div class="vis-item" style="display:block;margin-bottom:6px;">العنصر ٢</div>
+        <div class="vis-item" style="display:block;">العنصر ٣</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- items-center -->
+  <div class="demo-box" style="margin-bottom: 16px;">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;"><code>items-center</code> — يوسّط العناصر عمودياً</div>
+      <div class="vis-flex-row" style="align-items:center;border:1px dashed #ccc;padding:12px;border-radius:8px;min-height:80px;gap:12px;">
+        <div class="vis-item" style="height:50px;display:flex;align-items:center;">طويل</div>
+        <div class="vis-item" style="height:28px;display:flex;align-items:center;">قصير</div>
+        <div class="vis-item" style="height:40px;display:flex;align-items:center;">وسط</div>
+      </div>
+      <div style="margin-top:14px;font-size:0.82rem;color:var(--muted);">لاحظ كيف تصطف العناصر في المنتصف عمودياً رغم اختلاف أحجامها</div>
+    </div>
+  </div>
+
+  <!-- gap -->
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;"><code>gap-4</code> — يضع مسافة متساوية بين كل عنصرين</div>
+      <div class="vis-flex-row" style="gap:16px;">
+        <div class="vis-item">العنصر ١</div>
+        <div class="vis-item">العنصر ٢</div>
+        <div class="vis-item">العنصر ٣</div>
+      </div>
+      <div class="legend">
+        <span><span class="dot dot-gap"></span> مسافة gap = 16px (الرقم 4 يعني 4 × 4px = 16px)</span>
+      </div>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>flex</code></td>
+        <td><code>display: flex</code></td>
+        <td class="meaning">يخلي العناصر الداخلية تصطف في صف أفقي بدل عمودي</td>
+      </tr>
+      <tr>
+        <td><code>items-center</code></td>
+        <td><code>align-items: center</code></td>
+        <td class="meaning">يوسّط العناصر عمودياً في منتصف الحاوية</td>
+      </tr>
+      <tr>
+        <td><code>gap-4</code></td>
+        <td><code>gap: 1rem (16px)</code></td>
+        <td class="meaning">يضع مسافة 16px بين كل عنصرين داخل الحاوية</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>نصيحة:</strong> الأرقام في Tailwind تتبع نظام <strong>4px</strong>.
+    الرقم <code>4</code> يساوي 16px لأن 4 × 4px = 16px.
+    يعني: <code>gap-1</code> = 4px، <code>gap-2</code> = 8px، <code>gap-3</code> = 12px ...
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  2: SPACING                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٢. المسافات — p-4، size-10، shrink-0</h2>
+  <p>تتحكم في المساحات الداخلية للعناصر وأحجامها.</p>
+
+  <!-- p-4 -->
+  <div class="demo-box" style="margin-bottom: 16px;">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;"><code>p-4</code> = padding (حشوة داخلية) من كل الجهات</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;">
+        <div>
+          <div style="font-size:0.75rem;text-align:center;margin-bottom:6px;color:var(--muted);">بدون padding</div>
+          <div style="border:2px solid var(--border);border-radius:8px;display:inline-block;">
+            <span style="display:inline-block;padding:0;background:#E6F0FF;border-radius:6px;font-size:0.8rem;">نص ملتصق</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;text-align:center;margin-bottom:6px;color:var(--muted);">مع <code>p-4</code></div>
+          <div style="border:2px solid var(--border);border-radius:8px;display:inline-block;">
+            <span style="display:inline-block;padding:16px;background:#E6F0FF;border-radius:6px;font-size:0.8rem;">نص مريح</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- size-10 -->
+  <div class="demo-box" style="margin-bottom: 16px;">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;"><code>size-10</code> = عرض وارتفاع ثابت 40px</div>
+      <div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;justify-content:center;">
+        <div style="text-align:center;">
+          <div style="width:24px;height:24px;background:#E6F0FF;border:1px solid #BBD4F7;border-radius:6px;margin:0 auto;"></div>
+          <div style="font-size:0.72rem;margin-top:4px;"><code>size-6</code> = 24px</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:32px;height:32px;background:#E6F0FF;border:1px solid #BBD4F7;border-radius:6px;margin:0 auto;"></div>
+          <div style="font-size:0.72rem;margin-top:4px;"><code>size-8</code> = 32px</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:40px;height:40px;background:var(--accent-bg);border:2px solid var(--accent);border-radius:6px;margin:0 auto;"></div>
+          <div style="font-size:0.72rem;margin-top:4px;font-weight:600;"><code>size-10</code> = 40px ←</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:48px;height:48px;background:#E6F0FF;border:1px solid #BBD4F7;border-radius:6px;margin:0 auto;"></div>
+          <div style="font-size:0.72rem;margin-top:4px;"><code>size-12</code> = 48px</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- shrink-0 -->
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;"><code>shrink-0</code> — يمنع العنصر من الانكماش إذا ضاقت المساحة</div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;">
+        <div>
+          <div style="font-size:0.75rem;text-align:center;margin-bottom:8px;color:var(--muted);">بدون <code>shrink-0</code> — ينكمش</div>
+          <div style="display:flex;gap:6px;width:160px;border:2px dashed #ccc;border-radius:8px;padding:8px;">
+            <div style="min-width:0;flex-shrink:1;background:var(--red-bg);border-radius:6px;padding:8px;font-size:0.7rem;text-align:center;">ينكمش</div>
+            <div style="background:#E6F0FF;border-radius:6px;padding:8px;font-size:0.7rem;white-space:nowrap;">نص طويل جداً يأخذ مكان</div>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:0.75rem;text-align:center;margin-bottom:8px;color:var(--muted);">مع <code>shrink-0</code> — يحافظ على حجمه</div>
+          <div style="display:flex;gap:6px;width:160px;border:2px dashed #ccc;border-radius:8px;padding:8px;">
+            <div style="flex-shrink:0;background:var(--accent-bg);border-radius:6px;padding:8px;font-size:0.7rem;text-align:center;">ثابت</div>
+            <div style="background:#E6F0FF;border-radius:6px;padding:8px;font-size:0.7rem;white-space:nowrap;">نص طويل جداً يأخذ مكان</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>p-4</code></td>
+        <td><code>padding: 1rem</code></td>
+        <td class="meaning">يضيف مسافة داخلية 16px من جميع الجهات (يمين، يسار، فوق، تحت)</td>
+      </tr>
+      <tr>
+        <td><code>size-10</code></td>
+        <td><code>width: 2.5rem; height: 2.5rem</code></td>
+        <td class="meaning">يجعل عرض العنصر وارتفاعه 40px (مربع)</td>
+      </tr>
+      <tr>
+        <td><code>shrink-0</code></td>
+        <td><code>flex-shrink: 0</code></td>
+        <td class="meaning">يمنع العنصر من الانكماش إذا ضاقت المساحة المتاحة</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  3: BORDERS & CORNERS                                              -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٣. الحدود والزوايا — border، rounded-xl، rounded-lg</h2>
+  <p>تتحكم في شكل الإطار الخارجي واستدارة الزوايا.</p>
+
+  <!-- border + rounded -->
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;">كلاس <code>border</code> + <code>rounded-xl</code> = إطار بزوايا دائرية كبيرة</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;">
+        <div style="width:100px;height:70px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:var(--muted);">بدون border</div>
+        <div style="width:100px;height:70px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:var(--muted);">border فقط</div>
+        <div style="width:100px;height:70px;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:0.75rem;color:var(--muted);">border + rounded-xl</div>
+      </div>
+
+      <div style="font-weight:700;font-size:0.9rem;margin-top:20px;margin-bottom:10px;">مقارنة درجات الاستدارة:</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
+        <div class="card-demo r-sm">rounded-sm<br><span style="font-size:0.68rem;">2px</span></div>
+        <div class="card-demo r-md">rounded-md<br><span style="font-size:0.68rem;">6px</span></div>
+        <div class="card-demo r-lg" style="border-color:var(--accent);border-width:2px;">rounded-lg<br><span style="font-size:0.68rem;font-weight:600;">8px ← الأيقونة</span></div>
+        <div class="card-demo r-xl" style="border-color:var(--accent);border-width:2px;">rounded-xl<br><span style="font-size:0.68rem;font-weight:600;">12px ← البطاقة</span></div>
+      </div>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>border</code></td>
+        <td><code>border: 1px solid</code></td>
+        <td class="meaning">يرسم إطاراً رفيعاً (1px) حول العنصر بلون افتراضي</td>
+      </tr>
+      <tr>
+        <td><code>rounded-xl</code></td>
+        <td><code>border-radius: 0.75rem</code></td>
+        <td class="meaning">يجعل زوايا العنصر دائرية بنصف قطر 12px (استدارة كبيرة)</td>
+      </tr>
+      <tr>
+        <td><code>rounded-lg</code></td>
+        <td><code>border-radius: 0.5rem</code></td>
+        <td class="meaning">استدارة متوسطة 8px (أقل من xl)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>لماذا استُخدم <code>rounded-xl</code> للبطاقة و<code>rounded-lg</code> للأيقونة؟</strong>
+    لأن الأيقونة أصغر حجماً (40px)، والاستدارة الأقل تناسب حجمها أكثر.
+    بينما البطاقة أكبر فتحتاج استدارة أكبر لتبدو متناسقة.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  4: COLORS & DARK MODE                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٤. الألوان والوضع الليلي</h2>
+  <p>
+    Tailwind يستخدم نظام ألوان جاهز. الرمز <code>bg-red-100</code> يعني لون
+    خلفية أحمر بدرجة 100 (فاتح جداً). <code>dark:</code> يغير اللون تلقائياً في
+    الوضع الليلي.
+  </p>
+
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;">الألوان المستخدمة في البطاقة (الوضع النهاري)</div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;align-items:flex-end;">
+        <div style="text-align:center;">
+          <div style="width:64px;height:64px;border-radius:8px;background:#FEE2E2;border:1px solid #FECACA;margin:0 auto;"></div>
+          <div style="font-size:0.72rem;margin-top:6px;"><code>bg-red-100</code></div>
+          <div style="font-size:0.68rem;color:var(--muted);">#FEE2E2</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:64px;height:64px;border-radius:8px;background:#DC2626;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:0.7rem;font-weight:600;">أحمر</span>
+          </div>
+          <div style="font-size:0.72rem;margin-top:6px;"><code>text-red-600</code></div>
+          <div style="font-size:0.68rem;color:var(--muted);">#DC2626</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="width:64px;height:64px;border-radius:8px;background:#6A6A62;margin:0 auto;display:flex;align-items:center;justify-content:center;">
+            <span style="color:#fff;font-size:0.7rem;">نص</span>
+          </div>
+          <div style="font-size:0.72rem;margin-top:6px;"><code>text-muted-foreground</code></div>
+          <div style="font-size:0.68rem;color:var(--muted);">رمادي باهت</div>
+        </div>
+      </div>
+
+      <div style="font-weight:700;font-size:0.9rem;margin-top:20px;margin-bottom:12px;">كيف يعمل <code>dark:</code> — الوضع الليلي</div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;justify-content:center;">
+        <div style="text-align:center;padding:14px;border-radius:10px;background:#fff;border:1px solid var(--border);">
+          <div style="width:50px;height:50px;border-radius:8px;background:#FEE2E2;margin:0 auto 6px;"></div>
+          <div style="font-size:0.75rem;font-weight:600;">نهار</div>
+          <div style="font-size:0.7rem;color:var(--muted);direction:ltr;">bg-red-100</div>
+        </div>
+        <div style="font-size:1.5rem;display:flex;align-items:center;color:var(--muted);">←</div>
+        <div style="text-align:center;padding:14px;border-radius:10px;background:#1B1B18;border:1px solid #333;">
+          <div style="width:50px;height:50px;border-radius:8px;background:rgba(127,29,29,0.3);margin:0 auto 6px;"></div>
+          <div style="font-size:0.75rem;font-weight:600;color:#fff;">ليل</div>
+          <div style="font-size:0.7rem;color:#aaa;direction:ltr;">dark:bg-red-900/30</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>bg-red-100</code></td>
+        <td><code>background-color: #FEE2E2</code></td>
+        <td class="meaning">لون خلفية أحمر فاتح جداً (شفاف تقريباً)</td>
+      </tr>
+      <tr>
+        <td><code>text-red-600</code></td>
+        <td><code>color: #DC2626</code></td>
+        <td class="meaning">لون النص أحمر متوسط الوضوح</td>
+      </tr>
+      <tr>
+        <td><code>dark:bg-red-900/30</code></td>
+        <td>في الوضع الليلي فقط: <code>background-color: rgba(127,29,29,0.30)</code></td>
+        <td class="meaning">خلفية حمراء شفافة في الوضع الليلي. الرقم <code>/30</code> يعني شفافية 30%</td>
+      </tr>
+      <tr>
+        <td><code>dark:text-red-400</code></td>
+        <td>في الوضع الليلي فقط: <code>color: #F87171</code></td>
+        <td class="meaning">لون نص أحمر فاتح في الوضع الليلي (ليكون واضحاً على الخلفية الغامقة)</td>
+      </tr>
+      <tr>
+        <td><code>text-muted-foreground</code></td>
+        <td><code>color: hsl(0 0% 45.1%)</code></td>
+        <td class="meaning">لون نص رمادي باهت (للعناوين الثانوية)</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>كيف تقرأ تدرج اللون؟</strong> الأرقام من 50 إلى 950:
+    <strong>50</strong> = الأفتح، <strong>950</strong> = الأغمق.
+    <code>red-100</code> = أحمر فاتح، <code>red-600</code> = أحمر متوسط، <code>red-900</code> = أحمر غامق جداً.
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  5: TEXT UTILITIES                                                  -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٥. النصوص — الحجم، السمك، والأرقام</h2>
+  <p>كلاسات النص تتحكم في الحجم والوزن (سماكة الخط) وشكل الأرقام.</p>
+
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <!-- text sizes -->
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:12px;"><code>text-sm</code> مقابل <code>text-xl</code> — حجم الخط</div>
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">text-xs</code>
+          <span style="font-size:0.75rem;">نص صغير جداً (12px)</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">text-sm</code>
+          <span style="font-size:0.875rem;font-weight:600;color:var(--accent);">المصروفات (14px) ←</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">text-base</code>
+          <span style="font-size:1rem;">نص عادي (16px)</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">text-lg</code>
+          <span style="font-size:1.125rem;">نص كبير (18px)</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">text-xl</code>
+          <span style="font-size:1.25rem;font-weight:600;color:var(--accent);">٢٬٥٤٠ ر.س (20px) ←</span>
+        </div>
+      </div>
+
+      <!-- font weights -->
+      <div style="font-weight:700;font-size:0.9rem;margin-top:20px;margin-bottom:12px;"><code>font-semibold</code> — سماكة الخط</div>
+      <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:300px;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">font-normal</code>
+          <span style="font-size:1rem;font-weight:400;">نص عادي (400)</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">font-medium</code>
+          <span style="font-size:1rem;font-weight:500;">نص متوسط (500)</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">font-semibold</code>
+          <span style="font-size:1rem;font-weight:600;color:var(--accent);">نص نصف عريض (600) ←</span>
+        </div>
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <code style="font-size:0.78rem;">font-bold</code>
+          <span style="font-size:1rem;font-weight:700;">نص عريض (700)</span>
+        </div>
+      </div>
+
+      <!-- tabular-nums -->
+      <div style="font-weight:700;font-size:0.9rem;margin-top:20px;margin-bottom:12px;"><code>tabular-nums</code> — الأرقام لها نفس العرض</div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap;justify-content:center;">
+        <div>
+          <div style="font-size:0.72rem;margin-bottom:6px;color:var(--muted);">بدون <code>tabular-nums</code></div>
+          <div style="font-size:1rem;padding:8px 14px;border:1px solid var(--border);border-radius:8px;background:#fff;">
+            <div>١١١١ ر.س</div>
+            <div>٢٢٢٢ ر.س</div>
+            <div>٥٥٥٥ ر.س</div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">الأرقام غير متساوية العرض</div>
+        </div>
+        <div>
+          <div style="font-size:0.72rem;margin-bottom:6px;color:var(--muted);">مع <code>tabular-nums</code></div>
+          <div style="font-size:1rem;padding:8px 14px;border:1px solid var(--accent);border-radius:8px;background:#fff;font-variant-numeric:tabular-nums;">
+            <div>١١١١ ر.س</div>
+            <div>٢٢٢٢ ر.س</div>
+            <div>٥٥٥٥ ر.س</div>
+          </div>
+          <div style="font-size:0.68rem;color:var(--muted);margin-top:4px;">الأرقام متساوية العرض — أسهل للمقارنة</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>text-sm</code></td>
+        <td><code>font-size: 0.875rem</code></td>
+        <td class="meaning">حجم خط صغير (14px) — مناسب للعناوين الثانوية</td>
+      </tr>
+      <tr>
+        <td><code>text-xl</code></td>
+        <td><code>font-size: 1.25rem</code></td>
+        <td class="meaning">حجم خط كبير (20px) — مناسب للأرقام المهمة</td>
+      </tr>
+      <tr>
+        <td><code>font-semibold</code></td>
+        <td><code>font-weight: 600</code></td>
+        <td class="meaning">خط نصف عريض — يبرز النص بدون ما يكون ثقيلاً</td>
+      </tr>
+      <tr>
+        <td><code>tabular-nums</code></td>
+        <td><code>font-variant-numeric: tabular-nums</code></td>
+        <td class="meaning">يجعل كل رقم له نفس العرض — مهم للأعمدة الرقمية</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  6: THE SVG ICON                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٦. الأيقونة — SVG</h2>
+  <p>
+    الأيقونة داخل الكود هي SVG (رسم متجه). لا تحتاج أن تفهم كل التفاصيل،
+    المهم أن تعرف أنها ترسم سهماً مائلاً للأسفل بلون أحمر.
+  </p>
+
+  <div class="demo-box">
+    <div class="demo-visual column">
+      <div style="font-weight:700;font-size:0.9rem;margin-bottom:10px;">الأيقونة مكبرة — سهم مائل للأسفل ولليمين</div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#DC2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m7 7 10 10"></path>
+        <path d="M17 7v10H7"></path>
+      </svg>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">(هذا السهم يعني "مصروفات" = فلوس خارجة)</div>
+    </div>
+    <div class="demo-code">
+      <pre><code class="language-html">&lt;svg xmlns="http://www.w3.org/2000/svg"
+     width="24" height="24"
+     viewBox="0 0 24 24"
+     fill="none"
+     stroke="currentColor"
+     stroke-width="2"
+     stroke-linecap="round"
+     stroke-linejoin="round"
+     class="size-5 text-red-600 dark:text-red-400"&gt;
+
+  &lt;path d="m7 7 10 10"&gt;&lt;/path&gt;  &lt;!-- الخط المائل --&gt;
+  &lt;path d="M17 7v10H7"&gt;&lt;/path&gt;  &lt;!-- الخط الأفقي + العمودي --&gt;
+
+&lt;/svg&gt;</code></pre>
+    </div>
+  </div>
+
+  <table class="prop-table">
+    <thead>
+      <tr><th>الكلاس</th><th>يعني CSS</th><th>تأثيره</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>size-5</code></td>
+        <td><code>width: 1.25rem; height: 1.25rem</code></td>
+        <td class="meaning">حجم الأيقونة 20px × 20px</td>
+      </tr>
+      <tr>
+        <td><code>text-red-600</code></td>
+        <td><code>color: #DC2626</code></td>
+        <td class="meaning">لون الأيقونة في الوضع النهاري</td>
+      </tr>
+      <tr>
+        <td><code>dark:text-red-400</code></td>
+        <td><code>color: #F87171</code></td>
+        <td class="meaning">لون الأيقونة في الوضع الليلي (أفتح)</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  7: SUM-UP                                                          -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<section class="section">
+  <h2>٧. الخلاصة — البطاقة كاملة مع الشرح</h2>
+
+  <div class="demo-box">
+    <div class="demo-visual">
+      <div class="result-card">
+        <div class="icon-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m7 7 10 10"></path>
+            <path d="M17 7v10H7"></path>
+          </svg>
+        </div>
+        <div class="text-group">
+          <div class="label">المصروفات</div>
+          <div class="value">٢٬٥٤٠ ر.س</div>
+        </div>
+      </div>
+    </div>
+    <div class="demo-code">
+      <pre><code class="language-html">&lt;!-- الحاوية الرئيسية: flex + مسافة + إطار + حشوة --&gt;
+&lt;div class="flex items-center gap-4 rounded-xl border p-4"&gt;
+
+  &lt;!-- أيقونة المصروفات --&gt;
+  &lt;div class="flex size-10 shrink-0 items-center justify-center
+              rounded-lg bg-red-100 dark:bg-red-900/30"&gt;
+    &lt;svg class="size-5 text-red-600 dark:text-red-400"&gt;...&lt;/svg&gt;
+  &lt;/div&gt;
+
+  &lt;!-- النصوص --&gt;
+  &lt;div&gt;
+    &lt;p class="text-sm text-muted-foreground"&gt;المصروفات&lt;/p&gt;
+    &lt;p class="text-xl font-semibold tabular-nums"&gt;٢٬٥٤٠ ر.س&lt;/p&gt;
+  &lt;/div&gt;
+
+&lt;/div&gt;</code></pre>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>القاعدة الذهبية:</strong> كل كلاس في Tailwind يسوي <strong>شيء واحد فقط</strong>.
+    بدل ما تكتب ملف CSS طويل، ترص الكلاسات جنب بعض.
+    <code>flex</code> يتحكم في الترتيب، <code>p-4</code> يتحكم في المسافة،
+    <code>bg-red-100</code> يتحكم في اللون… وهكذا. مع الممارسة بتصير تقرأ الكلاسات
+    مثل ما تقرأ الجمل!
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!--  FOOTER                                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<footer class="footer">
+  تم بناؤه لمساعدتك على فهم أساسيات Tailwind CSS — ابدأ بالممارسة وكل شي بيصير أوضح مع الوقت.
+</footer>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>
+  hljs.configure({ cssSelector: 'code.language-html' });
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>
