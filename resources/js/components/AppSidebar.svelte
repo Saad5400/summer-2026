@@ -1,7 +1,10 @@
 <script lang="ts">
     import { Link } from '@inertiajs/svelte';
-    import LayoutGrid from 'lucide-svelte/icons/layout-grid';
     import ArrowLeftRight from 'lucide-svelte/icons/arrow-left-right';
+    import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
+    import LayoutGrid from 'lucide-svelte/icons/layout-grid';
+    import MessageSquareText from 'lucide-svelte/icons/message-square-text';
+    import Tags from 'lucide-svelte/icons/tags';
     import type { Snippet } from 'svelte';
     import AppLogo from '@/components/AppLogo.svelte';
     import NavFooter from '@/components/NavFooter.svelte';
@@ -36,6 +39,21 @@
             title: 'المعاملات',
             href: '/transactions',
             icon: ArrowLeftRight,
+        },
+        {
+            title: 'التقارير',
+            href: '/reports',
+            icon: BarChart3,
+        },
+        {
+            title: 'المساعد الذكي',
+            href: '/chat',
+            icon: MessageSquareText,
+        },
+        {
+            title: 'الفئات',
+            href: '/categories',
+            icon: Tags,
         },
     ];
 
