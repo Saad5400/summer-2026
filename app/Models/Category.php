@@ -24,7 +24,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['name', 'type', 'icon', 'color', 'sort_order'])]
+#[Fillable(['user_id', 'parent_id', 'name', 'type', 'icon', 'color', 'sort_order'])]
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
