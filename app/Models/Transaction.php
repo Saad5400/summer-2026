@@ -25,7 +25,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['amount', 'description', 'date', 'type', 'category_id'])]
+#[Fillable(['user_id', 'amount', 'description', 'date', 'type', 'category_id'])]
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
