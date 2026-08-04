@@ -61,11 +61,11 @@
 
 {#if !passkeyRegister.isSupported}
     <div class="text-sm text-muted-foreground">
-        Passkeys are not supported in this browser.
+        مفاتيح المرور غير مدعومة في هذا المتصفح.
     </div>
 {:else if !showForm}
     <Button variant="outline" onclick={() => (showForm = true)}>
-        Add passkey
+        إضافة مفتاح مرور
     </Button>
 {:else}
     <form
@@ -73,7 +73,7 @@
         class="space-y-4 rounded-lg border border-border bg-muted/50 p-4"
     >
         <div class="grid gap-2">
-            <Label for="passkey-name">Passkey name</Label>
+            <Label for="passkey-name">اسم مفتاح المرور</Label>
             <Input
                 id="passkey-name"
                 type="text"
@@ -83,7 +83,7 @@
                 autofocus
             />
             <p class="text-xs text-muted-foreground">
-                A name helps you identify this passkey later.
+                يساعدك الاسم في التعرف على مفتاح المرور لاحقاً.
             </p>
         </div>
 
@@ -97,11 +97,11 @@
                 disabled={passkeyRegister.isLoading || !name.trim()}
             >
                 {passkeyRegister.isLoading
-                    ? 'Registering...'
-                    : 'Register passkey'}
+                    ? 'جار التسجيل...'
+                    : 'تسجيل مفتاح المرور'}
             </Button>
             <Button type="button" variant="ghost" onclick={handleCancel}>
-                Cancel
+                إلغاء
             </Button>
         </div>
     </form>

@@ -1,7 +1,7 @@
 <script module lang="ts">
     export const layout = {
-        title: 'Forgot password',
-        description: 'Enter your email to receive a password reset link',
+        title: 'نسيت كلمة المرور',
+        description: 'أدخل بريدك الإلكتروني لاستلام رابط إعادة تعيين كلمة المرور',
     };
 </script>
 
@@ -24,7 +24,7 @@
     } = $props();
 </script>
 
-<AppHead title="Forgot password" />
+<AppHead title="نسيت كلمة المرور" />
 
 {#if status}
     <div class="mb-4 text-center text-sm font-medium text-green-600">
@@ -36,7 +36,7 @@
     <Form {...email.form()}>
         {#snippet children({ errors, processing })}
             <div class="grid gap-2">
-                <Label for="email">Email address</Label>
+                <Label for="email">البريد الإلكتروني</Label>
                 <Input
                     id="email"
                     type="email"
@@ -55,14 +55,14 @@
                     data-test="email-password-reset-link-button"
                 >
                     {#if processing}<Spinner />{/if}
-                    Email password reset link
+                    إرسال رابط إعادة تعيين كلمة المرور
                 </Button>
             </div>
         {/snippet}
     </Form>
 
     <div class="space-x-1 text-center text-sm text-muted-foreground">
-        <span>Or, return to</span>
-        <TextLink href={login()}>log in</TextLink>
+        <span>أو العودة إلى</span>
+        <TextLink href={login()}>تسجيل الدخول</TextLink>
     </div>
 </div>

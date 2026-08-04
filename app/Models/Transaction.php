@@ -18,14 +18,11 @@ use Illuminate\Support\Carbon;
  * @property string $description
  * @property string $date
  * @property string $type
- * @property string|null $ai_categorized_at
- * @property float|null $ai_category_confidence
- * @property bool $is_anomaly
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-#[Fillable(['user_id', 'amount', 'description', 'date', 'type', 'category_id', 'is_anomaly'])]
+#[Fillable(['user_id', 'amount', 'description', 'date', 'type', 'category_id'])]
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
@@ -36,9 +33,6 @@ class Transaction extends Model
         return [
             'amount' => 'decimal:2',
             'date' => 'date',
-            'ai_categorized_at' => 'datetime',
-            'ai_category_confidence' => 'decimal:2',
-            'is_anomaly' => 'boolean',
         ];
     }
 

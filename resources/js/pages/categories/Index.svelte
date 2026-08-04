@@ -10,6 +10,7 @@
 </script>
 
 <script lang="ts">
+  import { usePage, router, useForm } from '@inertiajs/svelte';
   import Check from 'lucide-svelte/icons/check';
   import Pencil from 'lucide-svelte/icons/pencil';
   import Plus from 'lucide-svelte/icons/plus';
@@ -19,8 +20,9 @@
   import Heading from '@/components/Heading.svelte';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
-  import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/types';
-  import type { Category } from '@/types';
+  import { Spinner } from '@/components/ui/spinner';
+  import { store, update, destroy } from '@/routes/categories';
+  import type { Category, TransactionType } from '@/types';
 
   const COLORS = [
     '#ef4444',
@@ -39,107 +41,86 @@
     '#6b7280',
   ];
 
-  let expenseCategories = $state<Category[]>(
-    EXPENSE_CATEGORIES.map((c) => ({ ...c })),
-  );
-  let incomeCategories = $state<Category[]>(
-    INCOME_CATEGORIES.map((c) => ({ ...c })),
-  );
+  const { props } = usePage<{
+    expenseCategories: Category[];
+    incomeCategories: Category[];
+  }>();
 
-  let activeTab = $state<'expense' | 'income'>('expense');
+  let expenseCategories = $derived(props.expenseCategories);
+  let incomeCategories = $derived(props.incomeCategories);
+
+  let activeTab = $state<TransactionType>('expense');
   let adding = $state(false);
   let editingId = $state<number | null>(null);
-  let newName = $state('');
-  let newColor = $state(COLORS[0]);
-  let editName = $state('');
-  let editColor = $state(COLORS[0]);
   let confirmDeleteId = $state<number | null>(null);
-  let nextId = $state(100);
+
+  const addForm = useForm({ name: '', type: 'expense' as TransactionType, icon: '', color: COLORS[0] });
+  const editForm = useForm({ name: '', icon: '', color: '', type: '' });
 
   const displayedCategories = $derived(
     activeTab === 'expense' ? expenseCategories : incomeCategories,
   );
 
-  const activeType = $derived(activeTab);
+  function handleTabChange(tab: TransactionType) {
+    activeTab = tab;
+    addForm.type = activeTab;
+    addForm.clearErrors();
+  }
 
   function startAdd() {
     adding = true;
     editingId = null;
-    newName = '';
-    newColor = COLORS[0];
     confirmDeleteId = null;
+    addForm.reset();
+    addForm.color = COLORS[0];
+    addForm.type = activeTab;
   }
 
   function cancelAdd() {
     adding = false;
-    newName = '';
-    newColor = COLORS[0];
+    addForm.reset();
+    addForm.color = COLORS[0];
   }
 
   function saveNew() {
-    const trimmed = newName.trim();
-
-    if (!trimmed) {
- return; 
-}
-
-    const cat: Category = {
-      id: nextId++,
-      name: trimmed,
-      icon: '',
-      color: newColor,
-      type: activeType,
-    };
-
-    if (activeType === 'expense') {
-      expenseCategories = [...expenseCategories, cat];
-    } else {
-      incomeCategories = [...incomeCategories, cat];
-    }
-
-    adding = false;
-    newName = '';
-    newColor = COLORS[0];
+    addForm.type = activeTab;
+    addForm.post(store.url(), {
+      preserveScroll: true,
+      onSuccess: () => {
+        adding = false;
+        addForm.reset();
+        addForm.color = COLORS[0];
+      },
+    });
   }
 
   function startEdit(cat: Category) {
     editingId = cat.id;
-    editName = cat.name;
-    editColor = cat.color;
+    editForm.name = cat.name;
+    editForm.icon = cat.icon;
+    editForm.color = cat.color;
+    editForm.type = cat.type;
     adding = false;
     confirmDeleteId = null;
   }
 
   function cancelEdit() {
     editingId = null;
-    editName = '';
-    editColor = COLORS[0];
+    editForm.reset();
+    editForm.color = COLORS[0];
   }
 
   function saveEdit() {
-    const trimmed = editName.trim();
-
-    if (!trimmed || editingId === null) {
- return; 
+    if (editingId === null) {
+return;
 }
 
-    if (activeType === 'expense') {
-      expenseCategories = expenseCategories.map((c) =>
-        c.id === editingId
-          ? { ...c, name: trimmed, color: editColor }
-          : c,
-      );
-    } else {
-      incomeCategories = incomeCategories.map((c) =>
-        c.id === editingId
-          ? { ...c, name: trimmed, color: editColor }
-          : c,
-      );
-    }
-
-    editingId = null;
-    editName = '';
-    editColor = COLORS[0];
+    editForm.put(update.url(editingId), {
+      preserveScroll: true,
+      onSuccess: () => {
+        editingId = null;
+      },
+    });
   }
 
   function confirmDelete(cat: Category) {
@@ -154,21 +135,22 @@
 
   function executeDelete() {
     if (confirmDeleteId === null) {
- return; 
+return;
 }
 
-    if (activeType === 'expense') {
-      expenseCategories = expenseCategories.filter(
-        (c) => c.id !== confirmDeleteId,
-      );
-    } else {
-      incomeCategories = incomeCategories.filter(
-        (c) => c.id !== confirmDeleteId,
-      );
-    }
-
-    confirmDeleteId = null;
+    router.delete(destroy.url(confirmDeleteId), {
+      preserveScroll: true,
+      onSuccess: () => {
+        confirmDeleteId = null;
+      },
+    });
   }
+
+  function isSystemCategory(cat: Category): boolean {
+    return cat.user_id == null;
+  }
+
+  let saving = $derived(addForm.processing || editForm.processing);
 </script>
 
 <AppHead title="الفئات" />
@@ -190,7 +172,7 @@
       class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'expense'
         ? 'bg-muted text-foreground shadow-sm'
         : 'text-muted-foreground hover:text-foreground'}"
-      onclick={() => (activeTab = 'expense')}
+      onclick={() => handleTabChange('expense')}
     >
       مصروفات
     </button>
@@ -198,7 +180,7 @@
       class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'income'
         ? 'bg-muted text-foreground shadow-sm'
         : 'text-muted-foreground hover:text-foreground'}"
-      onclick={() => (activeTab = 'income')}
+      onclick={() => handleTabChange('income')}
     >
       إيرادات
     </button>
@@ -212,31 +194,38 @@
         >
           <div class="flex items-center gap-3">
             <div
-              class="size-5 rounded-full shrink-0 ring-2 ring-offset-2"
-              style="background-color: {editColor}; --tw-ring-color: {editColor}"
+              class="size-5 shrink-0 rounded-full ring-2 ring-offset-2"
+              style="background-color: {editForm.color}; --tw-ring-color: {editForm.color}"
             ></div>
             <Input
               class="flex-1"
-              bind:value={editName}
+              bind:value={editForm.name}
               placeholder="اسم الفئة"
             />
           </div>
+          {#if editForm.errors.name}
+            <p class="text-xs text-destructive">{editForm.errors.name}</p>
+          {/if}
           <div class="flex flex-wrap gap-1.5">
             {#each COLORS as color (color)}
               <button
-                class="size-6 rounded-full transition-all hover:scale-110 {editColor === color
+                class="size-10 md:size-6 rounded-full transition-all hover:scale-110 {editForm.color === color
                   ? 'ring-2 ring-foreground ring-offset-2'
                   : ''}"
                 style="background-color: {color}"
-                onclick={() => (editColor = color)}
+                onclick={() => (editForm.color = color)}
                 type="button"
                 aria-label="اختيار لون {color}"
               ></button>
             {/each}
           </div>
           <div class="flex gap-2">
-            <Button size="sm" onclick={saveEdit}>
-              <Check class="size-3" />
+            <Button size="sm" onclick={saveEdit} disabled={saving}>
+              {#if saving}
+                <Spinner class="size-3" />
+              {:else}
+                <Check class="size-3" />
+              {/if}
               حفظ
             </Button>
             <Button variant="outline" size="sm" onclick={cancelEdit}>
@@ -248,21 +237,21 @@
       {:else if confirmDeleteId === cat.id}
         <div class="flex items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-3">
           <div
-            class="size-4 rounded-full shrink-0"
+            class="size-4 shrink-0 rounded-full"
             style="background-color: {cat.color}"
           ></div>
           <span class="flex-1 text-sm font-medium">{cat.name}</span>
-          <p class="text-xs text-destructive font-medium whitespace-nowrap">حذف؟</p>
+          <p class="whitespace-nowrap text-xs font-medium text-destructive">حذف؟</p>
           <div class="flex gap-1">
             <button
-              class="inline-flex items-center justify-center size-7 rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              class="inline-flex size-7 items-center justify-center rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onclick={executeDelete}
               type="button"
             >
               <Check class="size-3" />
             </button>
             <button
-              class="inline-flex items-center justify-center size-7 rounded-md border hover:bg-muted"
+              class="inline-flex size-7 items-center justify-center rounded-md border hover:bg-muted"
               onclick={cancelDelete}
               type="button"
             >
@@ -271,32 +260,32 @@
           </div>
         </div>
       {:else}
-        <div
-          class="flex items-center gap-3 rounded-xl border p-3 group transition-colors hover:bg-muted/50"
-        >
+        <div class="group flex items-center gap-3 rounded-xl border p-3">
           <div
-            class="size-4 rounded-full shrink-0"
+            class="size-4 shrink-0 rounded-full"
             style="background-color: {cat.color}"
           ></div>
           <span class="flex-1 text-sm font-medium">{cat.name}</span>
-          <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          {#if isSystemCategory(cat)}
+            <span class="text-[10px] text-muted-foreground/60 px-1">افتراضي</span>
+          {:else}
             <button
-              class="inline-flex items-center justify-center size-7 rounded-md hover:bg-muted"
+              class="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
               onclick={() => startEdit(cat)}
               type="button"
-              title="تعديل"
             >
-              <Pencil class="size-3.5" />
+              <Pencil class="size-3" />
+              تعديل
             </button>
             <button
-              class="inline-flex items-center justify-center size-7 rounded-md hover:bg-destructive/10 hover:text-destructive"
+              class="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
               onclick={() => confirmDelete(cat)}
               type="button"
-              title="حذف"
             >
-              <Trash class="size-3.5" />
+              <Trash class="size-3" />
+              حذف
             </button>
-          </div>
+          {/if}
         </div>
       {/if}
     {/each}
@@ -304,25 +293,32 @@
     {#if adding}
       <div class="flex flex-col gap-3 rounded-xl border-2 border-dashed border-muted-foreground/25 p-3">
         <Input
-          bind:value={newName}
+          bind:value={addForm.name}
           placeholder="اسم الفئة"
         />
+        {#if addForm.errors.name}
+          <p class="text-xs text-destructive">{addForm.errors.name}</p>
+        {/if}
         <div class="flex flex-wrap gap-1.5">
-            {#each COLORS as color (color)}
+          {#each COLORS as color (color)}
             <button
-              class="size-6 rounded-full transition-all hover:scale-110 {newColor === color
+              class="size-10 md:size-6 rounded-full transition-all hover:scale-110 {addForm.color === color
                 ? 'ring-2 ring-foreground ring-offset-2'
                 : ''}"
               style="background-color: {color}"
-              onclick={() => (newColor = color)}
+              onclick={() => (addForm.color = color)}
               type="button"
               aria-label="اختيار لون {color}"
             ></button>
           {/each}
         </div>
         <div class="flex gap-2">
-          <Button size="sm" onclick={saveNew}>
-            <Check class="size-3" />
+          <Button size="sm" onclick={saveNew} disabled={saving}>
+            {#if saving}
+              <Spinner class="size-3" />
+            {:else}
+              <Check class="size-3" />
+            {/if}
             حفظ
           </Button>
           <Button variant="outline" size="sm" onclick={cancelAdd}>

@@ -30,8 +30,8 @@
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Passkeys"
-            description="Manage your passkeys for passwordless sign-in"
+            title="مفاتيح المرور"
+            description="إدارة مفاتيح المرور لتسجيل الدخول بدون كلمة مرور"
         />
 
         <div class="overflow-hidden rounded-lg border border-border">
@@ -46,9 +46,9 @@
                     >
                         <KeyRound class="h-7 w-7 text-muted-foreground" />
                     </div>
-                    <p class="font-medium">No passkeys yet</p>
+                    <p class="font-medium">لا توجد مفاتيح مرور بعد</p>
                     <p class="mt-1 text-sm text-muted-foreground">
-                        Add a passkey to sign in without a password
+                        أضف مفتاح مرور لتسجيل الدخول بدون كلمة مرور
                     </p>
                 </div>
             {/if}

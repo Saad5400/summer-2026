@@ -18,18 +18,18 @@
     const authConfigContent: TwoFactorConfigContent = $derived.by(() => {
         if (showRecoveryInput) {
             return {
-                title: 'Recovery code',
+                title: 'رمز الاسترداد',
                 description:
-                    'Please confirm access to your account by entering one of your emergency recovery codes.',
-                buttonText: 'login using an authentication code',
+                    'يرجى تأكيد الوصول إلى حسابك بإدخال أحد رموز الاسترداد الطارئة.',
+                buttonText: 'تسجيل الدخول باستخدام رمز التحقق',
             };
         }
 
         return {
-            title: 'Authentication code',
+            title: 'رمز التحقق',
             description:
-                'Enter the authentication code provided by your authenticator application.',
-            buttonText: 'login using a recovery code',
+                'أدخل رمز التحقق المقدم من تطبيق المصادقة الخاص بك.',
+            buttonText: 'تسجيل الدخول باستخدام رمز استرداد',
         };
     });
 
@@ -47,7 +47,7 @@
     }
 </script>
 
-<AppHead title="Two-factor authentication" />
+<AppHead title="التحقق بخطوتين" />
 
 <div class="space-y-6">
     {#if !showRecoveryInput}
@@ -80,10 +80,10 @@
                     <InputError message={errors.code} />
                 </div>
                 <Button type="submit" class="w-full" disabled={processing}
-                    >Continue</Button
+                    >متابعة</Button
                 >
                 <div class="text-center text-sm text-muted-foreground">
-                    <span>or you can </span>
+                    <span>أو يمكنك </span>
                     <button
                         type="button"
                         class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
@@ -100,16 +100,16 @@
                 <Input
                     name="recovery_code"
                     type="text"
-                    placeholder="Enter recovery code"
+                    placeholder="أدخل رمز الاسترداد"
                     required
                 />
                 <InputError message={errors.recovery_code} />
                 <Button type="submit" class="w-full" disabled={processing}
-                    >Continue</Button
+                    >متابعة</Button
                 >
 
                 <div class="text-center text-sm text-muted-foreground">
-                    <span>or you can </span>
+                    <span>أو يمكنك </span>
                     <button
                         type="button"
                         class="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"

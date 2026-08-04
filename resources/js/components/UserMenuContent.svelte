@@ -44,7 +44,7 @@
                 onclick={props.onClick}
             >
                 <Settings class="me-2 h-4 w-4" />
-                Settings
+                الإعدادات
             </Link>
         {/snippet}
     </DropdownMenuItem>
@@ -60,7 +60,7 @@
             data-test="logout-button"
         >
             <LogOut class="me-2 h-4 w-4" />
-            Log out
+            تسجيل الخروج
         </Link>
     {/snippet}
 </DropdownMenuItem>

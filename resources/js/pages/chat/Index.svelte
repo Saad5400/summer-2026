@@ -14,7 +14,6 @@
   import MessageSquareText from 'lucide-svelte/icons/message-square-text';
   import Send from 'lucide-svelte/icons/send';
   import User from 'lucide-svelte/icons/user';
-  import { tick } from 'svelte';
   import AppHead from '@/components/AppHead.svelte';
   import Heading from '@/components/Heading.svelte';
   import { Button } from '@/components/ui/button';
@@ -27,9 +26,17 @@
     timestamp: Date;
   }
 
+  const dummyResponses: Record<string, string> = {
+    كم: 'هذه الميزة غير متاحة حالياً. سيتم تفعيل المساعد الذكي قريباً.',
+    أضف: 'هذه الميزة غير متاحة حالياً. سيتم تفعيل المساعد الذكي قريباً.',
+    كيف: 'هذه الميزة غير متاحة حالياً. سيتم تفعيل المساعد الذكي قريباً.',
+    أظهر: 'هذه الميزة غير متاحة حالياً. سيتم تفعيل المساعد الذكي قريباً.',
+    default: 'شكراً على رسالتك. المساعد الذكي غير متاح حالياً وسيتم تفعيله قريباً.',
+  };
+
   const greetingMessage: Message = {
     id: -1,
-    text: 'أهلاً بك! أنا مساعدك المالي. يمكنني مساعدتك في تتبع مصروفاتك، إضافة معاملات جديدة، وتقديم نصائح لتوفير المال. كيف يمكنني مساعدتك اليوم؟',
+    text: 'أهلاً بك! أنا مساعدك المالي. قريباً سأتمكن من مساعدتك في تتبع مصروفاتك وإضافة معاملات جديدة. هذه نسخة تجريبية للواجهة فقط.',
     sender: 'ai',
     timestamp: new Date(),
   };
@@ -43,56 +50,35 @@
 
   const suggestions: string[] = [
     'كم صرفت على الأكل الشهر هذا؟',
-    'أضف مصروف ٤٥ ريال مشتريات بقالة',
+    'أضف ٤٥ ريال مشتريات بقالة',
     'كيف وضع صرفي هذا الشهر؟',
     'أظهر لي تقرير المصروفات',
   ];
 
   $effect(() => {
     void messages.length;
-    tick().then(() => {
+    setTimeout(() => {
       if (chatContainer) {
         chatContainer.scrollTop = chatContainer.scrollHeight;
       }
-    });
+    }, 50);
   });
 
-  function getAIResponse(userText: string): string {
-    const text = userText.toLowerCase();
-
-    if (/كم\s+صرفت|مصروف|صرف/.test(text)) {
-      return 'حسب سجلاتك، إجمالي مصروفاتك هذا الشهر ٢\u060C٥٤٠ ر.س. أكثر فئة صرفت عليها هي \'طعام ومشروبات\' بمبلغ ٨٥٠ ر.س.';
+  function getDummyResponse(text: string): string {
+    for (const [key, response] of Object.entries(dummyResponses)) {
+      if (text.includes(key)) {
+        return response;
+      }
     }
-
-    if (/أضف|سجل/.test(text)) {
-      return 'تمت إضافة المعاملة بنجاح! ✓';
-    }
-
-    if (/تقرير/.test(text)) {
-      return 'يمكنك الاطلاع على التقارير التفصيلية من صفحة التقارير. هل تريد الانتقال إليها؟';
-    }
-
-    if (/نصيحة|وفر/.test(text)) {
-      return 'نصيحة: مصروفاتك على المطاعم زادت بنسبة ٣٠٪ مقارنة بالشهر الماضي. حاول تقليلها هذا الشهر.';
-    }
-
-    if (/شاذ|غير\s+معتاد/.test(text)) {
-      return 'لاحظت أن مصروفك على \'التسوق\' هذا الشهر ٨٥٠ ر.س وهو أعلى من المعدل المعتاد (٣٠٠ ر.س). هل تريد مراجعة هذه المعاملات؟';
-    }
-
-    if (/مرحب|اهلا|السلام/.test(text)) {
-      return 'أهلاً بك! أنا مساعدك المالي. يمكنني مساعدتك في تتبع مصروفاتك، إضافة معاملات جديدة، وتقديم نصائح لتوفير المال. كيف يمكنني مساعدتك اليوم؟';
-    }
-
-    return 'شكراً على سؤالك. يمكنني مساعدتك في تتبع المصروفات، إضافة معاملات، وتحليل عادات الصرف. جرب أن تسألني: كم صرفت هذا الشهر؟ أو أضف لي مصروف جديد.';
+    return dummyResponses.default;
   }
 
-  function sendMessage(text: string) {
+  async function sendMessage(text: string) {
     const trimmed = text.trim();
 
     if (!trimmed || isThinking) {
- return; 
-}
+      return;
+    }
 
     messageId += 1;
     messages = [
@@ -103,21 +89,20 @@
     inputValue = '';
     isThinking = true;
 
-    const delay = 800 + Math.random() * 700;
-
     setTimeout(() => {
       messageId += 1;
-      const response = getAIResponse(trimmed);
       messages = [
         ...messages,
-        { id: messageId, text: response, sender: 'ai', timestamp: new Date() },
+        {
+          id: messageId,
+          text: getDummyResponse(trimmed),
+          sender: 'ai',
+          timestamp: new Date(),
+        },
       ];
       isThinking = false;
-
-      tick().then(() => {
-        inputRef?.focus();
-      });
-    }, delay);
+      inputRef?.focus();
+    }, 1000);
   }
 
   function handleKeydown(event: KeyboardEvent) {

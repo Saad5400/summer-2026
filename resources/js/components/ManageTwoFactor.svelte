@@ -31,22 +31,21 @@
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Two-factor authentication"
-            description="Manage your two-factor authentication settings"
+            title="التحقق بخطوتين"
+            description="إدارة إعدادات التحقق بخطوتين"
         />
 
         {#if !twoFactorEnabled}
             <div class="flex flex-col items-start justify-start space-y-4">
                 <p class="text-muted-foreground text-sm">
-                    When you enable two-factor authentication, you will be
-                    prompted for a secure pin during login. This pin can be
-                    retrieved from a TOTP-supported application on your phone.
+                    عند تفعيل التحقق بخطوتين، سيُطلب منك رمز أمان أثناء تسجيل
+                    الدخول. يمكن الحصول على هذا الرمز من تطبيق يدعم TOTP على هاتفك.
                 </p>
 
                 <div>
                     {#if twoFactorAuth.hasSetupData()}
                         <Button onclick={() => (showSetupModal = true)}>
-                            <ShieldCheck class="size-4" />Continue setup
+                            <ShieldCheck class="size-4" />متابعة الإعداد
                         </Button>
                     {:else}
                         <Form
@@ -55,7 +54,7 @@
                         >
                             {#snippet children({ processing })}
                                 <Button type="submit" disabled={processing}>
-                                    Enable 2FA
+                                    تفعيل التحقق بخطوتين
                                 </Button>
                             {/snippet}
                         </Form>
@@ -65,9 +64,8 @@
         {:else}
             <div class="flex flex-col items-start justify-start space-y-4">
                 <p class="text-muted-foreground text-sm">
-                    You will be prompted for a secure, random pin during login,
-                    which you can retrieve from the TOTP-supported application
-                    on your phone.
+                    سيُطلب منك رمز أمان عشوائي أثناء تسجيل الدخول، يمكنك الحصول
+                    عليه من تطبيق يدعم TOTP على هاتفك.
                 </p>
 
                 <div class="relative inline">
@@ -78,7 +76,7 @@
                                 type="submit"
                                 disabled={processing}
                             >
-                                Disable 2FA
+                                تعطيل التحقق بخطوتين
                             </Button>
                         {/snippet}
                     </Form>

@@ -45,27 +45,27 @@
     const modalConfig: TwoFactorConfigContent = $derived.by(() => {
         if (twoFactorEnabled) {
             return {
-                title: 'Two-factor authentication enabled',
+                title: 'تم تفعيل التحقق بخطوتين',
                 description:
-                    'Two-factor authentication is now enabled. Scan the QR code or enter the setup key in your authenticator app.',
-                buttonText: 'Close',
+                    'تم تفعيل التحقق بخطوتين الآن. امسح رمز QR أو أدخل مفتاح الإعداد في تطبيق المصادقة.',
+                buttonText: 'إغلاق',
             };
         }
 
         if (showVerificationStep) {
             return {
-                title: 'Verify authentication code',
+                title: 'تأكيد رمز التحقق',
                 description:
-                    'Enter the 6-digit code from your authenticator app',
-                buttonText: 'Continue',
+                    'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة',
+                buttonText: 'متابعة',
             };
         }
 
         return {
-            title: 'Enable two-factor authentication',
+            title: 'تفعيل التحقق بخطوتين',
             description:
-                'To finish enabling two-factor authentication, scan the QR code or enter the setup key in your authenticator app',
-            buttonText: 'Continue',
+                'لإكمال تفعيل التحقق بخطوتين، امسح رمز QR أو أدخل مفتاح الإعداد في تطبيق المصادقة',
+            buttonText: 'متابعة',
         };
     });
 
@@ -207,7 +207,7 @@
                             class="absolute inset-0 top-1/2 h-px w-full bg-border"
                         ></div>
                         <span class="relative bg-card px-2 py-1"
-                            >or, enter the code manually</span
+                            >أو أدخل الرمز يدوياً</span
                         >
                     </div>
 
@@ -293,14 +293,14 @@
                                         (showVerificationStep = false)}
                                     disabled={processing}
                                 >
-                                    Back
+                                    رجوع
                                 </Button>
                                 <Button
                                     type="submit"
                                     class="w-auto flex-1"
                                     disabled={processing || code.length < 6}
                                 >
-                                    Confirm
+                                    تأكيد
                                 </Button>
                             </div>
                         </div>

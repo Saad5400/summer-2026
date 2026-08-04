@@ -1,71 +1,132 @@
 <script lang="ts">
-  import { fly } from 'svelte/transition';
-  import X from 'lucide-svelte/icons/x';
+  import { useForm } from '@inertiajs/svelte';
   import Plus from 'lucide-svelte/icons/plus';
+  import Save from 'lucide-svelte/icons/save';
+  import X from 'lucide-svelte/icons/x';
+  import { fly } from 'svelte/transition';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
   import { Label } from '@/components/ui/label';
-  import * as Select from '@/components/ui/select';
-  import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/types';
-  import type { TransactionType, TransactionFormData } from '@/types';
+  import { Spinner } from '@/components/ui/spinner';
+  import { store, update } from '@/routes/transactions';
+  import type { Category, Transaction, TransactionType } from '@/types';
 
   let {
     open = $bindable(false),
-    onAdd,
+    onOpenChange,
+    editTransaction = null,
+    categories = [],
+    onSuccess,
   }: {
     open?: boolean;
-    onAdd?: (data: TransactionFormData) => void;
+    onOpenChange?: () => void;
+    editTransaction?: Transaction | null;
+    categories?: Category[];
+    recentCategories?: Category[];
+    onSuccess?: () => void;
   } = $props();
 
+  const isEditing = $derived(editTransaction !== null);
+
   let transactionType: TransactionType = $state('expense');
-  let amount = $state('');
-  let description = $state('');
-  let date = $state(new Date().toISOString().slice(0, 10));
-  let categoryId = $state('');
+  let didInit = $state(false);
 
-  let submitting = $state(false);
+  const form = useForm({
+    amount: '',
+    description: '',
+    date: new Date().toISOString().slice(0, 10),
+    category_id: '',
+    type: 'expense' as string,
+  });
 
-  const categories = $derived(
-    transactionType === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES,
+  const filteredCategories = $derived(
+    categories.filter((c) => c.type === transactionType),
   );
 
+  function selectCategory(cat: Category) {
+    form.category_id = String(cat.id);
+    form.clearErrors('category_id');
+  }
+
   $effect(() => {
-    categoryId = '';
+    if (!open) {
+      didInit = false;
+
+      return;
+    }
+
+    if (didInit) {
+      form.category_id = '';
+
+      return;
+    }
+
+    didInit = true;
+
+    if (editTransaction) {
+      transactionType = editTransaction.type;
+      form.amount = String(editTransaction.amount);
+      form.description = editTransaction.description;
+      form.date = editTransaction.date;
+      form.category_id = editTransaction.category_id
+        ? String(editTransaction.category_id)
+        : '';
+      form.type = editTransaction.type;
+    } else {
+      transactionType = 'expense';
+      form.reset();
+    }
+
+    form.clearErrors();
   });
 
   function close() {
     open = false;
-    resetForm();
-  }
-
-  function resetForm() {
-    transactionType = 'expense';
-    amount = '';
-    description = '';
-    date = new Date().toISOString().slice(0, 10);
-    categoryId = '';
-    submitting = false;
+    onOpenChange?.();
   }
 
   function handleSubmit() {
-    if (!amount || !description) return;
-    submitting = true;
+    if (!form.amount || !form.category_id || form.processing) {
+      return;
+    }
 
-    onAdd?.({
-      amount: parseFloat(amount),
-      description,
-      date,
-      type: transactionType,
-      category_id: categoryId ? parseInt(categoryId) : null,
-    });
+    form.type = transactionType;
+    form.transform((data) => ({
+      ...data,
+      amount: parseFloat(data.amount),
+      description: data.description || null,
+      category_id: parseInt(data.category_id),
+    }));
 
-    setTimeout(() => {
-      close();
-    }, 300);
+    if (isEditing && editTransaction) {
+      form.put(update.url(editTransaction.id), {
+        preserveScroll: true,
+        onSuccess: () => {
+          close();
+          onSuccess?.();
+        },
+      });
+    } else {
+      form.post(store.url(), {
+        preserveScroll: true,
+        onSuccess: () => {
+          close();
+          onSuccess?.();
+        },
+      });
+    }
+  }
+
+  function handleTypeChange(type: TransactionType) {
+    transactionType = type;
+    form.type = type;
+    form.category_id = '';
   }
 
   function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Escape') close();
+    if (e.key === 'Escape') {
+      close();
+    }
   }
 </script>
 
@@ -85,7 +146,13 @@
     >
       <div class="flex items-center justify-between">
         <h2 class="text-lg font-semibold">
-          {transactionType === 'expense' ? 'إضافة مصروف' : 'إضافة دخل'}
+          {#if isEditing}
+            {editTransaction.type === 'expense' ? 'تعديل مصروف' : 'تعديل دخل'}
+          {:else if transactionType === 'expense'}
+            إضافة مصروف
+          {:else}
+            إضافة دخل
+          {/if}
         </h2>
         <button
           type="button"
@@ -102,7 +169,7 @@
           class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {transactionType === 'expense'
             ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
             : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => (transactionType = 'expense')}
+          onclick={() => handleTypeChange('expense')}
         >
           مصروف
         </button>
@@ -110,7 +177,7 @@
           class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {transactionType === 'income'
             ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
             : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => (transactionType = 'income')}
+          onclick={() => handleTypeChange('income')}
         >
           دخل
         </button>
@@ -118,49 +185,66 @@
 
       <div class="flex flex-col gap-4">
         <div class="space-y-1.5">
-          <Label>المبلغ (ر.س)</Label>
+          <Label for="add-amount">المبلغ (ر.س) <span class="text-destructive">*</span></Label>
           <Input
             id="add-amount"
             type="number"
             placeholder="0.00"
             step="0.01"
             min="0"
-            bind:value={amount}
+            bind:value={form.amount}
           />
+          {#if form.errors.amount}
+            <p class="text-xs text-destructive">{form.errors.amount}</p>
+          {/if}
         </div>
 
         <div class="space-y-1.5">
-          <Label>الوصف</Label>
+          <Label for="add-category">الفئة <span class="text-destructive">*</span></Label>
+
+          <div class="grid grid-cols-2 gap-1.5">
+            {#each filteredCategories as cat (cat.id)}
+              <button
+                type="button"
+                class="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98] {form.category_id === String(cat.id)
+                  ? 'ring-2 ring-foreground ring-offset-1 bg-muted'
+                  : 'hover:bg-muted/50'}"
+                style="{form.category_id === String(cat.id) ? 'border-color: ' + (cat.color ?? '#6b7280') + ';' : ''}"
+                onclick={() => selectCategory(cat)}
+              >
+                <span
+                  class="size-3 shrink-0 rounded-full"
+                  style="background-color: {cat.color ?? '#6b7280'}"
+                ></span>
+                <span class="truncate">{cat.name}</span>
+              </button>
+            {/each}
+          </div>
+
+          {#if form.errors.category_id}
+            <p class="text-xs text-destructive">{form.errors.category_id}</p>
+          {/if}
+        </div>
+
+        <div class="space-y-1.5">
+          <Label for="add-description">الوصف <span class="text-xs text-muted-foreground">(اختياري)</span></Label>
           <Input
             id="add-description"
             type="text"
-            placeholder="مثال: مشتريات بقالة"
-            bind:value={description}
+            placeholder="اختياري ..."
+            bind:value={form.description}
           />
+          {#if form.errors.description}
+            <p class="text-xs text-destructive">{form.errors.description}</p>
+          {/if}
         </div>
 
         <div class="space-y-1.5">
-          <Label>الفئة</Label>
-          <Select.Root bind:value={categoryId}>
-            <Select.Trigger id="add-category" class="w-full justify-between">
-              {#if categoryId}
-                {@const cat = categories.find((c) => c.id === parseInt(categoryId))}
-                {cat?.name ?? 'اختر الفئة'}
-              {:else}
-                <span class="text-muted-foreground">اختر الفئة</span>
-              {/if}
-            </Select.Trigger>
-            <Select.Content>
-              {#each categories as cat (cat.id)}
-                <Select.Item value={cat.id.toString()} label={cat.name} />
-              {/each}
-            </Select.Content>
-          </Select.Root>
-        </div>
-
-        <div class="space-y-1.5">
-          <Label>التاريخ</Label>
-          <Input id="add-date" type="date" bind:value={date} />
+          <Label for="add-date">التاريخ</Label>
+          <Input id="add-date" type="date" bind:value={form.date} />
+          {#if form.errors.date}
+            <p class="text-xs text-destructive">{form.errors.date}</p>
+          {/if}
         </div>
       </div>
 
@@ -169,17 +253,25 @@
           variant="outline"
           class="flex-1"
           onclick={close}
-          disabled={submitting}
+          disabled={form.processing}
         >
           إلغاء
         </Button>
         <Button
           class="flex-1 {transactionType === 'expense' ? 'bg-red-600 hover:bg-red-700' : ''}"
           onclick={handleSubmit}
-          disabled={submitting || !amount || !description}
+          disabled={form.processing || !form.amount || !form.category_id}
         >
-          <Plus class="size-4" />
-          إضافة
+          {#if form.processing}
+            <Spinner class="size-4" />
+            جاري الحفظ...
+          {:else if isEditing}
+            <Save class="size-4" />
+            حفظ
+          {:else}
+            <Plus class="size-4" />
+            إضافة
+          {/if}
         </Button>
       </div>
     </div>

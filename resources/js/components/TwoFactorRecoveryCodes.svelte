@@ -47,11 +47,11 @@
 <Card class="w-full">
     <CardHeader>
         <CardTitle class="flex gap-3">
-            <LockKeyhole class="size-4" />2FA recovery codes
+            <LockKeyhole class="size-4" />رموز استرداد التحقق بخطوتين
         </CardTitle>
         <CardDescription>
-            Recovery codes let you regain access if you lose your 2FA device.
-            Store them in a secure password manager.
+            تتيح لك رموز الاسترداد استعادة الوصول إذا فقدت جهاز التحقق بخطوتين.
+            احفظها في مدير كلمات مرور آمن.
         </CardDescription>
     </CardHeader>
     <CardContent>
@@ -64,7 +64,7 @@
                 {:else}
                     <Eye class="size-4" />
                 {/if}
-                {isRecoveryCodesVisible ? 'Hide' : 'View'} recovery codes
+                {isRecoveryCodesVisible ? 'إخفاء' : 'عرض'} رموز الاسترداد
             </Button>
 
             {#if isRecoveryCodesVisible && twoFactorAuth.state.recoveryCodesList.length}
@@ -79,7 +79,7 @@
                             type="submit"
                             disabled={processing}
                         >
-                            <RefreshCw class="size-4" /> Regenerate codes
+                            <RefreshCw class="size-4" /> إعادة إنشاء الرموز
                         </Button>
                     {/snippet}
                 </Form>
@@ -115,9 +115,9 @@
                         {/if}
                     </div>
                     <p class="text-xs text-muted-foreground select-none">
-                        Each recovery code can be used once to access your
-                        account and will be removed after use. If you need more,
-                        click <span class="font-bold">Regenerate codes</span> above.
+                        يمكن استخدام كل رمز استرداد مرة واحدة للوصول إلى حسابك
+                        وسيتم إزالته بعد الاستخدام. إذا كنت بحاجة للمزيد، اضغط
+                        <span class="font-bold">إعادة إنشاء الرموز</span> أعلاه.
                     </p>
                 </div>
             {/if}

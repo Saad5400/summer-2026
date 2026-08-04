@@ -21,7 +21,6 @@ class TransactionFactory extends Factory
             'description' => fake()->sentence(3),
             'date' => fake()->date(),
             'type' => fake()->randomElement(['expense', 'income']),
-            'is_anomaly' => false,
         ];
     }
 
@@ -43,14 +42,6 @@ class TransactionFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'category_id' => null,
-        ]);
-    }
-
-    public function anomalous(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'is_anomaly' => true,
-            'amount' => fake()->randomFloat(2, 10000, 50000),
         ]);
     }
 }

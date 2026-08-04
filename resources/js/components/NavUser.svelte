@@ -16,7 +16,7 @@
     import UserMenuContent from '@/components/UserMenuContent.svelte';
 
     const user = $derived(page.props.auth.user);
-    const { isMobile, state: sidebarState } = useSidebar();
+    const sidebar = useSidebar();
 </script>
 
 {#if user}
@@ -40,7 +40,7 @@
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                     class="w-full min-w-0 rounded-lg"
-                    side={$sidebarState === 'collapsed' && !$isMobile
+                    side={sidebar.state === 'collapsed' && !sidebar.isMobile
                         ? 'left'
                         : 'top'}
                     align="end"
