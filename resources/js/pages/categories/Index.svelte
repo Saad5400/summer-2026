@@ -215,7 +215,7 @@
       <TabsTrigger value="expense" class="gap-2 rounded-lg">
         مصروفات
         <span
-          class="min-w-5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground group-data-[variant=default]/tabs-list:data-active:bg-expense-muted group-data-[variant=default]/tabs-list:data-active:text-expense"
+          class="min-w-5 rounded-full bg-expense-muted px-1.5 py-0.5 text-[11px] font-semibold leading-none text-expense"
         >
           {expenseCategories.length}
         </span>
@@ -223,7 +223,7 @@
       <TabsTrigger value="income" class="gap-2 rounded-lg">
         إيرادات
         <span
-          class="min-w-5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground group-data-[variant=default]/tabs-list:data-active:bg-income-muted group-data-[variant=default]/tabs-list:data-active:text-income"
+          class="min-w-5 rounded-full bg-income-muted px-1.5 py-0.5 text-[11px] font-semibold leading-none text-income"
         >
           {incomeCategories.length}
         </span>

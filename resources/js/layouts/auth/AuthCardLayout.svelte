@@ -2,13 +2,7 @@
     import { Link } from '@inertiajs/svelte';
     import type { Snippet } from 'svelte';
     import AppLogoIcon from '@/components/AppLogoIcon.svelte';
-    import {
-        Card,
-        CardContent,
-        CardDescription,
-        CardHeader,
-        CardTitle,
-    } from '@/components/ui/card';
+    import { Card } from '@/components/ui/card';
     import { home } from '@/routes';
 
     let {
@@ -23,32 +17,53 @@
 </script>
 
 <div
-    class="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10"
+    class="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-10 sm:px-6"
 >
-    <div class="flex w-full max-w-md flex-col gap-6">
-        <Link
-            href={home()}
-            class="flex items-center gap-2 self-center font-medium"
-        >
-            <div class="flex h-9 w-9 items-center justify-center">
-                <AppLogoIcon
-                    class="size-9 fill-current text-black dark:text-white"
-                />
-            </div>
-        </Link>
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 -z-10">
+        <div
+            class="absolute left-1/2 top-[-7rem] h-[26rem] w-[34rem] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px] dark:bg-primary/25"
+        ></div>
+    </div>
 
-        <div class="flex flex-col gap-6">
-            <Card class="rounded-xl">
-                <CardHeader class="px-10 pt-8 pb-0 text-center">
-                    <CardTitle class="text-xl">{title}</CardTitle>
-                    <CardDescription>
-                        {description}
-                    </CardDescription>
-                </CardHeader>
-                <CardContent class="px-10 py-8">
-                    {@render children?.()}
-                </CardContent>
-            </Card>
+    <div class="w-full max-w-md">
+        <div class="animate-fade-in mb-7 flex flex-col items-center gap-3">
+            <Link
+                href={home()}
+                class="flex flex-col items-center gap-3 transition-opacity hover:opacity-90"
+            >
+                <div
+                    class="flex size-12 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft"
+                >
+                    <AppLogoIcon class="size-7" />
+                </div>
+                <span class="text-lg font-semibold tracking-tight text-foreground"
+                    >ميزان</span
+                >
+            </Link>
         </div>
+
+        <Card
+            class="animate-fade-in-up gap-0 rounded-2xl border border-border bg-card py-0 shadow-soft ring-0"
+        >
+            <div class="p-6 sm:p-8">
+                <div class="mb-6 space-y-2 text-center">
+                    {#if title}
+                        <h1
+                            class="text-xl font-semibold tracking-tight text-foreground"
+                        >
+                            {title}
+                        </h1>
+                    {/if}
+                    {#if description}
+                        <p
+                            class="text-pretty text-sm leading-relaxed text-muted-foreground"
+                        >
+                            {description}
+                        </p>
+                    {/if}
+                </div>
+                {@render children?.()}
+            </div>
+        </Card>
     </div>
 </div>
