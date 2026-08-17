@@ -77,8 +77,8 @@
         <DialogContent>
             <DialogTitle>إزالة مفتاح المرور</DialogTitle>
             <DialogDescription>
-                هل أنت متأكد من إزالة مفتاح المرور "{passkey.name}"؟
-                لن تتمكن من استخدامه لتسجيل الدخول بعد الآن.
+                هل أنت متأكد من إزالة مفتاح المرور "{passkey.name}"؟ لن تتمكن من
+                استخدامه لتسجيل الدخول بعد الآن.
             </DialogDescription>
             <DialogFooter>
                 <DialogClose asChild>

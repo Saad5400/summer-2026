@@ -13,16 +13,21 @@
 
 <script lang="ts">
     import ArrowUp from 'lucide-svelte/icons/arrow-up';
-    import Bot from 'lucide-svelte/icons/bot';
-    import MessageCircleQuestion from 'lucide-svelte/icons/message-circle-question';
+    import ListChecks from 'lucide-svelte/icons/list-checks';
+    import PlusCircle from 'lucide-svelte/icons/plus-circle';
     import RotateCcw from 'lucide-svelte/icons/rotate-ccw';
+    import Sparkles from 'lucide-svelte/icons/sparkles';
     import Square from 'lucide-svelte/icons/square';
+    import Trash2 from 'lucide-svelte/icons/trash-2';
+    import TrendingDown from 'lucide-svelte/icons/trending-down';
+    import type { Component } from 'svelte';
     import { untrack } from 'svelte';
     import AppHead from '@/components/AppHead.svelte';
+    import AssistantAvatar from '@/components/assistant/AssistantAvatar.svelte';
     import MarkdownContent from '@/components/assistant/MarkdownContent.svelte';
     import ToolCallCard from '@/components/assistant/ToolCallCard.svelte';
     import type { ToolCallView } from '@/components/assistant/ToolCallCard.svelte';
-    import Heading from '@/components/Heading.svelte';
+    import TypingIndicator from '@/components/assistant/TypingIndicator.svelte';
     import { Button } from '@/components/ui/button';
     import { Textarea } from '@/components/ui/textarea';
     import { streamAssistant } from '@/lib/assistant-stream';
@@ -67,11 +72,11 @@
             })),
     );
 
-    const EXAMPLES = [
-        'كم صرفت هذا الشهر؟',
-        'أضف مصروف ٥٠ ريال قهوة أمس',
-        'اعرض أكبر ٥ مصروفات',
-        'احذف آخر عملية',
+    const EXAMPLES: { text: string; icon: Component }[] = [
+        { text: 'كم صرفت هذا الشهر؟', icon: TrendingDown },
+        { text: 'أضف مصروف ٥٠ ريال قهوة أمس', icon: PlusCircle },
+        { text: 'اعرض أكبر ٥ مصروفات', icon: ListChecks },
+        { text: 'احذف آخر عملية', icon: Trash2 },
     ];
 
     let showTypingIndicator = $derived.by(() => {
@@ -296,95 +301,129 @@
 
 <AppHead title="المساعد المالي" />
 
-<div class="flex h-[calc(100dvh-4rem)] flex-1 flex-col">
-    <div
-        class="flex flex-wrap items-center justify-between gap-3 border-b px-4 py-4 md:px-6"
+<div class="-mb-24 flex h-[calc(100dvh-4rem)] flex-1 flex-col md:-mb-8">
+    <!-- Header -->
+    <header
+        class="flex items-center justify-between gap-3 border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur-xl md:px-6"
     >
-        <Heading
-            title="المساعد المالي"
-            description="اسأل عن مصروفاتك، أضف أو عدّل أو احذف عمليات — كل شيء بالمحادثة"
-        />
+        <div class="flex min-w-0 items-center gap-3">
+            <AssistantAvatar size="md" />
+            <div class="min-w-0">
+                <h1 class="truncate text-sm font-semibold">المساعد المالي</h1>
+                <p
+                    class="flex items-center gap-1.5 text-xs text-muted-foreground"
+                >
+                    <span
+                        class="size-1.5 rounded-full bg-income {streaming
+                            ? 'animate-pulse'
+                            : ''}"
+                    ></span>
+                    {streaming ? 'يكتب الآن…' : 'متصل'}
+                </p>
+            </div>
+        </div>
         <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
+            class="gap-1.5 text-muted-foreground"
             onclick={resetConversation}
             disabled={messages.length === 0}
         >
-            <RotateCcw />
-            محادثة جديدة
+            <RotateCcw class="size-3.5" />
+            <span class="hidden sm:inline">محادثة جديدة</span>
         </Button>
-    </div>
+    </header>
 
+    <!-- Messages -->
     <div
         bind:this={scrollContainer}
-        class="flex-1 overflow-y-auto px-4 py-6 md:px-6"
+        class="flex-1 overflow-y-auto scroll-smooth px-4 py-6 md:px-6"
         aria-live="polite"
         aria-label="منطقة الرسائل"
     >
-        <div class="mx-auto flex w-full max-w-3xl flex-col gap-4">
+        <div class="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5">
             {#if messages.length === 0}
+                <!-- Welcome state -->
                 <div
-                    class="flex flex-1 flex-col items-center justify-center gap-6 py-16 text-center"
+                    class="flex flex-1 flex-col items-center justify-center gap-8 py-10 text-center"
                 >
-                    <span
-                        class="flex size-14 items-center justify-center rounded-2xl bg-primary/10"
-                    >
-                        <Bot class="size-7 text-primary" />
-                    </span>
-                    <div class="space-y-1.5">
-                        <h3 class="text-base font-semibold">
-                            كيف أقدر أساعدك؟
-                        </h3>
-                        <p class="text-sm text-muted-foreground">
-                            ابدأ محادثة أو جرّب أحد الأمثلة التالية
-                        </p>
+                    <div class="flex flex-col items-center gap-5">
+                        <div class="relative">
+                            <div
+                                class="absolute inset-0 -z-10 rounded-full bg-primary/25 blur-2xl"
+                            ></div>
+                            <AssistantAvatar
+                                size="lg"
+                                class="animate-fade-in-up"
+                            />
+                        </div>
+                        <div class="space-y-2">
+                            <h2 class="text-xl font-semibold tracking-tight">
+                                كيف أقدر أساعدك؟
+                            </h2>
+                            <p
+                                class="mx-auto max-w-sm text-sm text-muted-foreground"
+                            >
+                                اسأل عن مصروفاتك، أضِف أو عدّل أو احذف عمليات —
+                                كل شيء بالمحادثة.
+                            </p>
+                        </div>
                     </div>
-                    <div class="grid w-full gap-2 sm:grid-cols-2">
-                        {#each EXAMPLES as example (example)}
+
+                    <div class="grid w-full gap-2.5 sm:grid-cols-2">
+                        {#each EXAMPLES as example (example.text)}
                             <button
                                 type="button"
-                                class="flex items-center gap-2 rounded-xl border bg-card px-4 py-3 text-start text-sm transition-colors hover:bg-muted/50"
-                                onclick={() => void send(example)}
+                                class="group flex items-center gap-3 rounded-xl border border-border/70 bg-card px-4 py-3.5 text-start text-sm shadow-soft transition-all hover:border-primary/40 hover:bg-accent/50 active:scale-[0.98]"
+                                onclick={() => void send(example.text)}
                             >
-                                <MessageCircleQuestion
-                                    class="size-4 shrink-0 text-muted-foreground"
-                                />
-                                <span>{example}</span>
+                                <span
+                                    class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/15"
+                                >
+                                    <example.icon class="size-4.5" />
+                                </span>
+                                <span class="min-w-0 flex-1"
+                                    >{example.text}</span
+                                >
                             </button>
                         {/each}
                     </div>
+
+                    <p
+                        class="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    >
+                        <Sparkles class="size-3.5" />
+                        مدعوم بالذكاء الاصطناعي — راجِع الملخص بعد كل عملية
+                    </p>
                 </div>
             {:else}
                 {#each messages as message (message.id)}
                     {#if message.role === 'user'}
-                        <div class="flex justify-end">
+                        <div class="flex animate-fade-in-up justify-end">
                             <div
-                                class="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-ee-md bg-primary px-4 py-2.5 text-sm text-primary-foreground"
+                                class="max-w-[85%] whitespace-pre-wrap rounded-2xl rounded-ee-md bg-primary px-4 py-2.5 text-sm leading-relaxed text-primary-foreground shadow-soft tabular-nums"
                                 dir="auto"
                             >
                                 {message.content}
                             </div>
                         </div>
                     {:else if message.role === 'tool'}
-                        <div class="flex justify-center">
-                            <div class="w-full max-w-xl">
-                                <ToolCallCard call={message.call} />
-                            </div>
+                        <div class="animate-fade-in-up ps-10">
+                            <ToolCallCard call={message.call} />
                         </div>
                     {:else}
-                        <div class="flex items-start gap-2.5">
-                            <span
-                                class="mt-1 flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10"
-                                aria-hidden="true"
+                        <div
+                            class="flex animate-fade-in-up items-start gap-2.5"
+                        >
+                            <AssistantAvatar size="sm" class="mt-0.5" />
+                            <div
+                                class="flex min-w-0 max-w-[85%] flex-col gap-1.5"
                             >
-                                <Bot class="size-4 text-primary" />
-                            </span>
-                            <div class="flex max-w-[85%] flex-col gap-1.5">
                                 <div
-                                    class="rounded-2xl rounded-es-md border px-4 py-2.5 text-sm
+                                    class="rounded-2xl rounded-ss-md px-4 py-3 text-sm leading-relaxed
                                         {message.error
-                                        ? 'whitespace-pre-wrap border-destructive/40 bg-destructive/10 text-destructive'
-                                        : 'bg-card'}"
+                                        ? 'whitespace-pre-wrap border border-destructive/40 bg-destructive/10 text-destructive'
+                                        : 'border border-border/70 bg-card shadow-soft'}"
                                     dir="auto"
                                 >
                                     {#if message.error}
@@ -398,7 +437,7 @@
                                 {#if message.retry}
                                     <button
                                         type="button"
-                                        class="flex w-fit items-center gap-1.5 rounded-md text-xs text-muted-foreground transition-colors hover:text-foreground"
+                                        class="flex w-fit items-center gap-1.5 rounded-md px-1 py-0.5 text-xs text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                                         onclick={message.retry}
                                         disabled={streaming}
                                     >
@@ -412,25 +451,12 @@
                 {/each}
 
                 {#if showTypingIndicator}
-                    <div class="flex items-center gap-2.5">
-                        <span
-                            class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10"
-                            aria-hidden="true"
-                        >
-                            <Bot class="size-4 text-primary" />
-                        </span>
+                    <div class="flex animate-fade-in items-start gap-2.5">
+                        <AssistantAvatar size="sm" class="mt-0.5" />
                         <div
-                            class="flex items-center gap-1.5 rounded-2xl rounded-es-md border bg-card px-4 py-3"
+                            class="flex items-center rounded-2xl rounded-ss-md border border-border/70 bg-card px-4 py-3.5 shadow-soft"
                         >
-                            <span
-                                class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60"
-                            ></span>
-                            <span
-                                class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60 [animation-delay:150ms]"
-                            ></span>
-                            <span
-                                class="size-1.5 animate-pulse rounded-full bg-muted-foreground/60 [animation-delay:300ms]"
-                            ></span>
+                            <TypingIndicator />
                         </div>
                     </div>
                 {/if}
@@ -438,17 +464,22 @@
         </div>
     </div>
 
-    <div class="border-t bg-background px-4 py-4 md:px-6">
+    <!-- Composer -->
+    <div
+        class="border-t border-border/60 bg-background/80 px-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] pt-3 backdrop-blur-xl md:pb-4 md:pt-4"
+    >
         <div class="mx-auto w-full max-w-3xl">
-            <div class="flex items-end gap-2">
+            <div
+                class="flex items-end gap-2 rounded-2xl border border-border/70 bg-card p-1.5 shadow-soft transition-colors focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15"
+            >
                 <Textarea
-                    ref={textareaEl}
+                    bind:ref={textareaEl}
                     bind:value={input}
                     onkeydown={handleKeydown}
                     rows={1}
-                    placeholder="اكتب رسالتك… (Enter للإرسال، Shift+Enter لسطر جديد)"
+                    placeholder="اكتب رسالتك…"
                     disabled={streaming}
-                    class="max-h-40 min-h-11 resize-none"
+                    class="max-h-40 min-h-11 resize-none border-0 bg-transparent px-3 py-2.5 shadow-none focus-visible:ring-0 dark:bg-transparent"
                     dir="auto"
                 />
                 {#if streaming}
@@ -456,26 +487,27 @@
                         type="button"
                         variant="destructive"
                         size="icon"
+                        class="size-11 shrink-0 rounded-xl"
                         onclick={stop}
                         aria-label="إيقاف التوليد"
                     >
-                        <Square class="size-4" />
+                        <Square class="size-4 fill-current" />
                     </Button>
                 {:else}
                     <Button
                         type="button"
                         size="icon"
+                        class="size-11 shrink-0 rounded-xl transition-transform active:scale-90"
                         onclick={() => void send(input)}
                         disabled={input.trim() === ''}
                         aria-label="إرسال"
                     >
-                        <ArrowUp class="size-4" />
+                        <ArrowUp class="size-5" />
                     </Button>
                 {/if}
             </div>
-            <p class="mt-2 text-center text-xs text-muted-foreground">
-                المساعد ينفّذ التعديلات مباشرة على بياناتك — راجع الملخص بعد كل
-                عملية
+            <p class="mt-2 text-center text-[0.7rem] text-muted-foreground">
+                Enter للإرسال · Shift+Enter لسطر جديد
             </p>
         </div>
     </div>

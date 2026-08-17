@@ -1,9 +1,7 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
-    import AppContent from '@/components/AppContent.svelte';
-    import AppShell from '@/components/AppShell.svelte';
-    import AppSidebar from '@/components/AppSidebar.svelte';
-    import AppSidebarHeader from '@/components/AppSidebarHeader.svelte';
+    import AppTopbar from '@/components/AppTopbar.svelte';
+    import MobileBottomNav from '@/components/MobileBottomNav.svelte';
     import { Toaster } from '@/components/ui/sonner';
     import type { BreadcrumbItem } from '@/types';
 
@@ -16,11 +14,13 @@
     } = $props();
 </script>
 
-<AppShell variant="sidebar">
-    <AppSidebar />
-    <AppContent variant="sidebar" class="overflow-x-hidden">
-        <AppSidebarHeader {breadcrumbs} />
+<div class="flex min-h-screen flex-col bg-background">
+    <AppTopbar />
+
+    <main class="mx-auto w-full max-w-6xl flex-1 pb-24 md:pb-8">
         {@render children?.()}
-    </AppContent>
+    </main>
+
+    <MobileBottomNav />
     <Toaster />
-</AppShell>
+</div>

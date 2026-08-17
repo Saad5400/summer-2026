@@ -23,19 +23,64 @@
     }
 </script>
 
-<div
-    class="inline-flex gap-1 rounded-lg bg-neutral-100 p-1 dark:bg-neutral-800"
->
-    {#each tabs as { value, Icon, label } (value)}
-        <button
-            onclick={() => handleAppearanceChange(value)}
-            class="flex items-center rounded-md px-3.5 py-1.5 transition-colors {appearance.value ===
-            value
-                ? 'bg-white shadow-xs dark:bg-neutral-700 dark:text-neutral-100'
-                : 'text-neutral-500 hover:bg-neutral-200/60 hover:text-black dark:text-neutral-400 dark:hover:bg-neutral-700/60'}"
+<div class="space-y-6">
+    <div
+        class="grid grid-cols-3 gap-1 rounded-xl border border-border bg-muted/60 p-1"
+        role="radiogroup"
+        aria-label="مظهر التطبيق"
+    >
+        {#each tabs as { value, Icon, label } (value)}
+            {@const active = appearance.value === value}
+            <button
+                type="button"
+                role="radio"
+                aria-checked={active}
+                onclick={() => handleAppearanceChange(value)}
+                class="flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all active:scale-95 {active
+                    ? 'bg-card text-foreground shadow-soft'
+                    : 'text-muted-foreground hover:text-foreground'}"
+            >
+                <Icon class="size-4 shrink-0 {active ? 'text-primary' : ''}" />
+                <span>{label}</span>
+            </button>
+        {/each}
+    </div>
+
+    <!-- Live preview -->
+    <div
+        class="overflow-hidden rounded-xl border border-border bg-background shadow-soft"
+    >
+        <div
+            class="flex items-center gap-2 border-b border-border bg-muted/40 px-4 py-2.5"
         >
-            <Icon class="-ms-1 h-4 w-4" />
-            <span class="ms-1.5 text-sm">{label}</span>
-        </button>
-    {/each}
+            <span class="size-2.5 rounded-full bg-destructive/60"></span>
+            <span class="size-2.5 rounded-full bg-primary/40"></span>
+            <span class="size-2.5 rounded-full bg-muted-foreground/40"></span>
+            <span class="ms-2 text-xs text-muted-foreground">معاينة</span>
+        </div>
+        <div class="space-y-3 p-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                >
+                    <span class="text-xs font-semibold">م</span>
+                </div>
+                <div class="space-y-1.5">
+                    <div class="h-2.5 w-24 rounded-full bg-foreground/80"></div>
+                    <div
+                        class="h-2 w-16 rounded-full bg-muted-foreground/40"
+                    ></div>
+                </div>
+            </div>
+            <div class="rounded-lg border border-border bg-card p-3">
+                <div class="mb-2 flex items-center justify-between">
+                    <div
+                        class="h-2 w-20 rounded-full bg-muted-foreground/40"
+                    ></div>
+                    <div class="h-2 w-10 rounded-full bg-primary/60"></div>
+                </div>
+                <div class="h-2 w-full rounded-full bg-muted"></div>
+            </div>
+        </div>
+    </div>
 </div>

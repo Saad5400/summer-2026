@@ -55,8 +55,7 @@
         if (showVerificationStep) {
             return {
                 title: 'تأكيد رمز التحقق',
-                description:
-                    'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة',
+                description: 'أدخل الرمز المكون من 6 أرقام من تطبيق المصادقة',
                 buttonText: 'متابعة',
             };
         }
@@ -211,9 +210,7 @@
                         >
                     </div>
 
-                    <div
-                        class="flex w-full items-center justify-center gap-2"
-                    >
+                    <div class="flex w-full items-center justify-center gap-2">
                         <div
                             class="flex w-full items-stretch overflow-hidden rounded-xl border border-border"
                         >

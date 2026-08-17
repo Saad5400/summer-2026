@@ -71,6 +71,7 @@ class ReportController extends Controller
 
             $monthlyComparison->push([
                 'month' => $date->translatedFormat('F Y'),
+                'short' => $date->translatedFormat('M'),
                 'key' => $date->format('Y-m'),
                 'expenses' => (float) $monthData->where('type', 'expense')->sum('amount'),
                 'income' => (float) $monthData->where('type', 'income')->sum('amount'),
@@ -86,6 +87,7 @@ class ReportController extends Controller
 
             $spendingTrends->push([
                 'month' => $date->translatedFormat('F Y'),
+                'short' => $date->translatedFormat('M'),
                 'key' => $date->format('Y-m'),
                 'expenses' => (float) $monthData->where('type', 'expense')->sum('amount'),
                 'income' => (float) $monthData->where('type', 'income')->sum('amount'),

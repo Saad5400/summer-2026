@@ -8,6 +8,7 @@
 
 <script lang="ts">
     import { Form } from '@inertiajs/svelte';
+    import Lock from 'lucide-svelte/icons/lock';
     import {
         index as confirmOptions,
         store as confirmStore,
@@ -39,27 +40,31 @@
         <div class="space-y-6">
             <div class="grid gap-2">
                 <Label for="password">كلمة المرور</Label>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    class="mt-1 block w-full"
-                    required
-                    autocomplete="current-password"
-                />
+                <div class="relative">
+                    <Lock
+                        class="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <PasswordInput
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="كلمة المرور"
+                        class="h-11 rounded-xl ps-10 text-base md:text-sm"
+                    />
+                </div>
                 <InputError message={errors.password} />
             </div>
 
-            <div class="flex items-center">
-                <Button
-                    type="submit"
-                    class="w-full"
-                    disabled={processing}
-                    data-test="confirm-password-button"
-                >
-                    {#if processing}<Spinner />{/if}
-                    تأكيد كلمة المرور
-                </Button>
-            </div>
+            <Button
+                type="submit"
+                class="h-11 w-full rounded-xl text-sm font-semibold shadow-soft transition-transform active:scale-[0.98]"
+                disabled={processing}
+                data-test="confirm-password-button"
+            >
+                {#if processing}<Spinner />{/if}
+                تأكيد كلمة المرور
+            </Button>
         </div>
     {/snippet}
 </Form>

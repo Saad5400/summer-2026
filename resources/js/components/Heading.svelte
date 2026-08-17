@@ -10,15 +10,17 @@
     } = $props();
 </script>
 
-<header class={variant === 'small' ? '' : 'mb-8 space-y-0.5'}>
+<header class={variant === 'small' ? 'space-y-1' : 'mb-8 space-y-1'}>
     <h2
         class={variant === 'small'
-            ? 'mb-0.5 text-base font-medium'
-            : 'text-xl font-semibold tracking-tight'}
+            ? 'text-base font-semibold tracking-tight text-foreground'
+            : 'text-xl font-semibold tracking-tight text-foreground'}
     >
         {title}
     </h2>
     {#if description}
-        <p class="text-sm text-muted-foreground">{description}</p>
+        <p class="text-sm leading-relaxed text-muted-foreground">
+            {description}
+        </p>
     {/if}
 </header>

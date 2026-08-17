@@ -216,15 +216,23 @@
     });
 </script>
 
-<Collapsible.Root class="rounded-xl border bg-card">
+<Collapsible.Root
+    class="group/collapsible overflow-hidden rounded-xl border border-border/70 bg-card shadow-soft transition-colors
+        {call.status === 'failed' ? 'border-destructive/30' : ''}"
+>
     <Collapsible.Trigger
-        class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-start text-sm transition-colors hover:bg-muted/50"
+        class="flex w-full items-center gap-2.5 px-3 py-2.5 text-start text-sm transition-colors hover:bg-accent/40"
     >
         <span
-            class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted"
+            class="flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors
+                {call.status === 'running'
+                ? 'bg-primary/10 text-primary'
+                : call.status === 'success'
+                  ? 'bg-income-muted text-income'
+                  : 'bg-destructive/10 text-destructive'}"
             aria-hidden="true"
         >
-            <meta.icon class="size-4 text-muted-foreground" />
+            <meta.icon class="size-4" />
         </span>
 
         <span class="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -233,13 +241,16 @@
                 {#if call.status === 'running'}
                     <Badge
                         variant="outline"
-                        class="gap-1 text-muted-foreground"
+                        class="gap-1 border-primary/30 text-primary"
                     >
                         <Spinner class="size-2.5" />
                         {statusLabel}
                     </Badge>
                 {:else if call.status === 'success'}
-                    <Badge variant="secondary" class="gap-1">
+                    <Badge
+                        variant="secondary"
+                        class="gap-1 bg-income-muted text-income"
+                    >
                         <Check class="size-2.5" />
                         {statusLabel}
                     </Badge>
@@ -263,16 +274,18 @@
     </Collapsible.Trigger>
 
     <Collapsible.Content>
-        <div class="space-y-3 border-t px-3.5 py-3 text-xs">
+        <div class="space-y-3 border-t border-border/70 px-3 py-3 text-xs">
             {#if argumentLines.length > 0}
                 <div>
-                    <p class="mb-1.5 font-medium text-muted-foreground">
+                    <p
+                        class="mb-1.5 text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
                         المعطيات
                     </p>
-                    <ul class="space-y-1" dir="auto">
+                    <ul class="space-y-1 tabular-nums" dir="auto">
                         {#each argumentLines as line, index (index)}
                             <li
-                                class="rounded-md bg-muted/60 px-2 py-1"
+                                class="rounded-lg bg-muted/60 px-2.5 py-1.5"
                                 dir="auto"
                             >
                                 {line}
@@ -284,13 +297,15 @@
 
             {#if resultRows.length > 0}
                 <div>
-                    <p class="mb-1.5 font-medium text-muted-foreground">
+                    <p
+                        class="mb-1.5 text-[0.7rem] font-semibold uppercase tracking-wide text-muted-foreground"
+                    >
                         النتيجة
                     </p>
-                    <dl class="space-y-1">
+                    <dl class="space-y-1 tabular-nums">
                         {#each resultRows as row (row.label + '|' + row.value)}
                             <div
-                                class="flex items-baseline justify-between gap-3 rounded-md bg-muted/60 px-2 py-1"
+                                class="flex items-baseline justify-between gap-3 rounded-lg bg-muted/60 px-2.5 py-1.5"
                             >
                                 <dt
                                     class="shrink-0 text-muted-foreground"

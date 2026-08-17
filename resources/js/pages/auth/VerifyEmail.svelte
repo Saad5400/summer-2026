@@ -8,6 +8,7 @@
 
 <script lang="ts">
     import { Form } from '@inertiajs/svelte';
+    import MailCheck from 'lucide-svelte/icons/mail-check';
     import AppHead from '@/components/AppHead.svelte';
     import TextLink from '@/components/TextLink.svelte';
     import { Button } from '@/components/ui/button';
@@ -24,15 +25,30 @@
 
 <AppHead title="تأكيد البريد الإلكتروني" />
 
+<div class="mb-6 flex justify-center">
+    <div
+        class="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary"
+    >
+        <MailCheck class="size-7" />
+    </div>
+</div>
+
 {#if status === 'verification-link-sent'}
-    <div class="mb-4 text-center text-sm font-medium text-green-600">
+    <div
+        class="mb-6 rounded-xl border border-income/25 bg-income-muted/60 px-4 py-3 text-center text-sm font-medium text-income"
+    >
         تم إرسال رابط تأكيد جديد إلى البريد الإلكتروني الذي قدمته أثناء التسجيل.
     </div>
 {/if}
 
-<Form {...send.form()} class="space-y-6 text-center">
+<Form {...send.form()} class="space-y-4 text-center">
     {#snippet children({ processing })}
-        <Button type="submit" disabled={processing} variant="secondary">
+        <Button
+            type="submit"
+            class="h-11 w-full rounded-xl text-sm font-semibold transition-transform active:scale-[0.98]"
+            disabled={processing}
+            variant="secondary"
+        >
             {#if processing}<Spinner />{/if}
             إعادة إرسال بريد التأكيد
         </Button>
