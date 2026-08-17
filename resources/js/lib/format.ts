@@ -2,11 +2,11 @@
  * Formatting helpers for the Mizan app (Arabic / SAR).
  */
 
-const numberFormatter = new Intl.NumberFormat('ar-SA', {
+const numberFormatter = new Intl.NumberFormat('ar', {
     maximumFractionDigits: 0,
 });
 
-const decimalFormatter = new Intl.NumberFormat('ar-SA', {
+const decimalFormatter = new Intl.NumberFormat('ar', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
 });
@@ -38,13 +38,13 @@ export function formatSignedMoney(
     return `${sign}${formatMoney(Math.abs(value))}`;
 }
 
-const dateFormatter = new Intl.DateTimeFormat('ar-SA', {
+const dateFormatter = new Intl.DateTimeFormat('ar', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
 });
 
-const shortDateFormatter = new Intl.DateTimeFormat('ar-SA', {
+const shortDateFormatter = new Intl.DateTimeFormat('ar', {
     day: 'numeric',
     month: 'short',
 });

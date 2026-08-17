@@ -3,6 +3,7 @@
 
   interface Entry {
     month: string;
+    short?: string;
     income: number;
     expenses: number;
   }
@@ -144,15 +145,15 @@
         <title>{d.month} — مصروفات: {formatMoney(d.expenses)}</title>
       </rect>
 
-      <!-- month label -->
+      <!-- month label (short Arabic label to avoid overlap) -->
       <text
         x={cx}
         y={H - 10}
         text-anchor="middle"
-        font-size="9.5"
+        font-size="10"
         fill="var(--muted-foreground)"
       >
-        {d.month}
+        {d.short ?? d.month}
       </text>
     {/each}
   </svg>

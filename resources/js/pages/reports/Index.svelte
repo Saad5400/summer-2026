@@ -41,6 +41,7 @@
 
   interface MonthlyEntry {
     month: string;
+    short?: string;
     expenses: number;
     income: number;
   }
@@ -94,7 +95,11 @@
   );
 
   const trendData = $derived(
-    spendingTrends.map((m) => ({ month: m.month, amount: m.expenses })),
+    spendingTrends.map((m) => ({
+      month: m.month,
+      short: m.short ?? m.month,
+      amount: m.expenses,
+    })),
   );
 
   const trendUp = $derived(
