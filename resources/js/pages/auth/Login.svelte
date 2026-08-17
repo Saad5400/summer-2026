@@ -7,6 +7,8 @@
 
 <script lang="ts">
     import { Form } from '@inertiajs/svelte';
+    import Lock from 'lucide-svelte/icons/lock';
+    import Mail from 'lucide-svelte/icons/mail';
     import AppHead from '@/components/AppHead.svelte';
     import InputError from '@/components/InputError.svelte';
     import PasskeyVerify from '@/components/PasskeyVerify.svelte';
@@ -33,7 +35,9 @@
 <AppHead title="تسجيل الدخول" />
 
 {#if status}
-    <div class="mb-4 text-center text-sm font-medium text-green-600">
+    <div
+        class="mb-6 rounded-xl border border-income/25 bg-income-muted/60 px-4 py-3 text-center text-sm font-medium text-income"
+    >
         {status}
     </div>
 {/if}
@@ -46,17 +50,24 @@
     class="flex flex-col gap-6"
 >
     {#snippet children({ errors, processing })}
-        <div class="grid gap-6">
+        <div class="grid gap-5">
             <div class="grid gap-2">
                 <Label for="email">البريد الإلكتروني</Label>
-                <Input
-                    id="email"
-                    type="email"
-                    name="email"
-                    required
-                    autocomplete="email"
-                    placeholder="email@example.com"
-                />
+                <div class="relative">
+                    <Mail
+                        class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                        id="email"
+                        type="email"
+                        name="email"
+                        required
+                        autocomplete="email"
+                        inputmode="email"
+                        placeholder="email@example.com"
+                        class="h-11 rounded-xl ps-10 text-base md:text-sm"
+                    />
+                </div>
                 <InputError message={errors.email} />
             </div>
 
@@ -69,26 +80,33 @@
                         </TextLink>
                     {/if}
                 </div>
-                <PasswordInput
-                    id="password"
-                    name="password"
-                    required
-                    autocomplete="current-password"
-                    placeholder="كلمة المرور"
-                />
+                <div class="relative">
+                    <Lock
+                        class="pointer-events-none absolute start-3 top-1/2 z-10 size-4 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <PasswordInput
+                        id="password"
+                        name="password"
+                        required
+                        autocomplete="current-password"
+                        placeholder="كلمة المرور"
+                        class="h-11 rounded-xl ps-10 text-base md:text-sm"
+                    />
+                </div>
                 <InputError message={errors.password} />
             </div>
 
-            <div class="flex items-center justify-between">
-                <Label for="remember" class="flex items-center space-x-3">
-                    <Checkbox id="remember" name="remember" />
-                    <span>تذكرني</span>
-                </Label>
-            </div>
+            <Label
+                for="remember"
+                class="flex w-fit items-center gap-2.5 text-sm font-normal text-muted-foreground"
+            >
+                <Checkbox id="remember" name="remember" />
+                <span>تذكرني</span>
+            </Label>
 
             <Button
                 type="submit"
-                class="mt-4 w-full"
+                class="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-soft transition-transform active:scale-[0.98]"
                 disabled={processing}
                 data-test="login-button"
             >
