@@ -65,7 +65,7 @@
   });
 </script>
 
-<div class="flex flex-col items-center gap-6 md:flex-row md:items-center md:gap-8">
+<div class="flex flex-col items-center gap-6 md:flex-row md:items-center md:justify-center md:gap-10">
   <!-- Ring -->
   <div class="relative shrink-0" style="width: 15rem; max-width: 62vw; aspect-ratio: 1;">
     <svg viewBox="-100 -100 200 200" class="h-full w-full -rotate-90 overflow-visible">
@@ -118,21 +118,25 @@
   </div>
 
   <!-- Legend -->
-  <ul class="w-full min-w-0 flex-1 space-y-1">
+  <ul class="mx-auto w-full max-w-xs min-w-0 space-y-0.5 md:mx-0 md:w-[19rem]">
     {#each segments as seg (seg.name + seg.color)}
       <li
-        class="flex items-center gap-3 rounded-xl px-2 py-1.5 transition-colors"
+        class="flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors"
         class:bg-accent={hovered === seg.index}
         onpointerenter={() => (hovered = seg.index)}
         onpointerleave={() => (hovered = null)}
       >
         <CategoryIcon icon={seg.icon} color={seg.color} size="sm" />
-        <div class="flex min-w-0 flex-1 flex-col">
-          <span class="truncate text-sm font-medium text-foreground">{seg.name}</span>
-          <span class="text-xs tabular-nums text-muted-foreground">{seg.pct}٪</span>
-        </div>
+        <span class="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+          {seg.name}
+        </span>
         <span class="shrink-0 text-sm font-semibold tabular-nums text-foreground">
           {formatMoney(seg.total, false)}
+        </span>
+        <span
+          class="w-9 shrink-0 text-end text-xs tabular-nums text-muted-foreground"
+        >
+          {seg.pct}٪
         </span>
       </li>
     {/each}
