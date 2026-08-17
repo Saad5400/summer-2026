@@ -54,10 +54,7 @@
         </header>
 
         <!-- Mobile: horizontal scrollable segmented control -->
-        <nav
-            class="mb-6 lg:hidden"
-            aria-label="أقسام الإعدادات"
-        >
+        <nav class="mb-6 lg:hidden" aria-label="أقسام الإعدادات">
             <div
                 class="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >

@@ -44,7 +44,8 @@
                 >
                     <AppLogoIcon class="size-7" />
                 </div>
-                <span class="text-lg font-semibold tracking-tight text-foreground"
+                <span
+                    class="text-lg font-semibold tracking-tight text-foreground"
                     >ميزان</span
                 >
             </Link>

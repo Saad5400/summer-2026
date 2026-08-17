@@ -19,7 +19,9 @@
     // auth page uses the focused centered layout.
     const splitPages = ['auth/Login', 'auth/Register'];
     const Layout = $derived(
-        splitPages.includes(page.component) ? AuthSplitLayout : AuthSimpleLayout,
+        splitPages.includes(page.component)
+            ? AuthSplitLayout
+            : AuthSimpleLayout,
     );
 </script>
 

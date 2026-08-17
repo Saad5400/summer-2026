@@ -382,7 +382,8 @@
                                 >
                                     <example.icon class="size-4.5" />
                                 </span>
-                                <span class="min-w-0 flex-1">{example.text}</span
+                                <span class="min-w-0 flex-1"
+                                    >{example.text}</span
                                 >
                             </button>
                         {/each}
@@ -411,9 +412,13 @@
                             <ToolCallCard call={message.call} />
                         </div>
                     {:else}
-                        <div class="flex animate-fade-in-up items-start gap-2.5">
+                        <div
+                            class="flex animate-fade-in-up items-start gap-2.5"
+                        >
                             <AssistantAvatar size="sm" class="mt-0.5" />
-                            <div class="flex min-w-0 max-w-[85%] flex-col gap-1.5">
+                            <div
+                                class="flex min-w-0 max-w-[85%] flex-col gap-1.5"
+                            >
                                 <div
                                     class="rounded-2xl rounded-ss-md px-4 py-3 text-sm leading-relaxed
                                         {message.error

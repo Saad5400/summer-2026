@@ -153,9 +153,7 @@
             <!-- Desktop Menu -->
             <div class="hidden h-full lg:flex lg:flex-1">
                 <NavigationMenu class="ms-10 flex h-full items-stretch">
-                    <NavigationMenuList
-                        class="flex h-full items-stretch gap-2"
-                    >
+                    <NavigationMenuList class="flex h-full items-stretch gap-2">
                         {#each mainNavItems as item (toUrl(item.href))}
                             <NavigationMenuItem
                                 class="relative flex h-full items-center"

@@ -81,7 +81,11 @@ export function formatRelativeDate(value: string | Date): string {
         );
         const diffDays = Math.round(
             (startOfToday.getTime() -
-                new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()) /
+                new Date(
+                    d.getFullYear(),
+                    d.getMonth(),
+                    d.getDate(),
+                ).getTime()) /
                 86400000,
         );
 

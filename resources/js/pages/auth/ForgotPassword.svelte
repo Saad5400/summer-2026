@@ -1,7 +1,8 @@
 <script module lang="ts">
     export const layout = {
         title: 'نسيت كلمة المرور',
-        description: 'أدخل بريدك الإلكتروني لاستلام رابط إعادة تعيين كلمة المرور',
+        description:
+            'أدخل بريدك الإلكتروني لاستلام رابط إعادة تعيين كلمة المرور',
     };
 </script>
 

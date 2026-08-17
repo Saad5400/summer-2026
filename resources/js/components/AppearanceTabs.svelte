@@ -40,9 +40,7 @@
                     ? 'bg-card text-foreground shadow-soft'
                     : 'text-muted-foreground hover:text-foreground'}"
             >
-                <Icon
-                    class="size-4 shrink-0 {active ? 'text-primary' : ''}"
-                />
+                <Icon class="size-4 shrink-0 {active ? 'text-primary' : ''}" />
                 <span>{label}</span>
             </button>
         {/each}
@@ -69,12 +67,16 @@
                 </div>
                 <div class="space-y-1.5">
                     <div class="h-2.5 w-24 rounded-full bg-foreground/80"></div>
-                    <div class="h-2 w-16 rounded-full bg-muted-foreground/40"></div>
+                    <div
+                        class="h-2 w-16 rounded-full bg-muted-foreground/40"
+                    ></div>
                 </div>
             </div>
             <div class="rounded-lg border border-border bg-card p-3">
                 <div class="mb-2 flex items-center justify-between">
-                    <div class="h-2 w-20 rounded-full bg-muted-foreground/40"></div>
+                    <div
+                        class="h-2 w-20 rounded-full bg-muted-foreground/40"
+                    ></div>
                     <div class="h-2 w-10 rounded-full bg-primary/60"></div>
                 </div>
                 <div class="h-2 w-full rounded-full bg-muted"></div>

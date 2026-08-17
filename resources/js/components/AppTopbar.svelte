@@ -53,9 +53,32 @@
                 class="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft"
             >
                 <svg viewBox="0 0 32 32" fill="none" class="size-5">
-                    <rect x="6" y="17" width="4.5" height="9" rx="2.25" fill="currentColor" opacity="0.55" />
-                    <rect x="13.75" y="11" width="4.5" height="15" rx="2.25" fill="currentColor" opacity="0.8" />
-                    <rect x="21.5" y="6" width="4.5" height="20" rx="2.25" fill="currentColor" />
+                    <rect
+                        x="6"
+                        y="17"
+                        width="4.5"
+                        height="9"
+                        rx="2.25"
+                        fill="currentColor"
+                        opacity="0.55"
+                    />
+                    <rect
+                        x="13.75"
+                        y="11"
+                        width="4.5"
+                        height="15"
+                        rx="2.25"
+                        fill="currentColor"
+                        opacity="0.8"
+                    />
+                    <rect
+                        x="21.5"
+                        y="6"
+                        width="4.5"
+                        height="20"
+                        rx="2.25"
+                        fill="currentColor"
+                    />
                 </svg>
             </span>
             <span class="text-lg font-bold tracking-tight">ميزان</span>
@@ -98,7 +121,11 @@
                     >
                         <UserInfo {user} compact />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent class="w-60 rounded-xl" align="end" sideOffset={8}>
+                    <DropdownMenuContent
+                        class="w-60 rounded-xl"
+                        align="end"
+                        sideOffset={8}
+                    >
                         <UserMenuContent {user} />
                     </DropdownMenuContent>
                 </DropdownMenu>

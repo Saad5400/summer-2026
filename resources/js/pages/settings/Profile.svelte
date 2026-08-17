@@ -57,9 +57,7 @@
     <Card class="animate-fade-in-up p-6">
         <CardHeader class="p-0">
             <CardTitle>الملف الشخصي</CardTitle>
-            <CardDescription>
-                تحديث اسمك وبريدك الإلكتروني
-            </CardDescription>
+            <CardDescription>تحديث اسمك وبريدك الإلكتروني</CardDescription>
         </CardHeader>
 
         <CardContent class="space-y-6 p-0">
@@ -81,9 +79,7 @@
                     >
                         <span class="truncate">{user.email}</span>
                         {#if isVerified}
-                            <BadgeCheck
-                                class="size-4 shrink-0 text-primary"
-                            />
+                            <BadgeCheck class="size-4 shrink-0 text-primary" />
                         {/if}
                     </div>
                 </div>

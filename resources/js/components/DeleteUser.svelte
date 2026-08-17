@@ -32,9 +32,7 @@
             <TriangleAlert class="size-4" />
             حذف الحساب
         </CardTitle>
-        <CardDescription>
-            حذف حسابك وجميع بياناته نهائياً
-        </CardDescription>
+        <CardDescription>حذف حسابك وجميع بياناته نهائياً</CardDescription>
     </CardHeader>
 
     <CardContent class="p-0">

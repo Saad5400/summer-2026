@@ -65,7 +65,11 @@
 </script>
 
 <span
-    class={cn('flex shrink-0 items-center justify-center', box[size], className)}
+    class={cn(
+        'flex shrink-0 items-center justify-center',
+        box[size],
+        className,
+    )}
     style="background-color: color-mix(in oklch, {tint} 14%, transparent); color: {tint};"
 >
     <Icon class={glyph[size]} />

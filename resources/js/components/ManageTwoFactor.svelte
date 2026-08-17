@@ -39,7 +39,8 @@
             <div class="flex flex-col items-start justify-start space-y-4">
                 <p class="text-muted-foreground text-sm">
                     عند تفعيل التحقق بخطوتين، سيُطلب منك رمز أمان أثناء تسجيل
-                    الدخول. يمكن الحصول على هذا الرمز من تطبيق يدعم TOTP على هاتفك.
+                    الدخول. يمكن الحصول على هذا الرمز من تطبيق يدعم TOTP على
+                    هاتفك.
                 </p>
 
                 <div>

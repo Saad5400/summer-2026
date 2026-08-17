@@ -11,5 +11,7 @@
     <span class="truncate text-base leading-tight font-bold tracking-tight"
         >ميزان</span
     >
-    <span class="truncate text-xs text-muted-foreground">تتبّع مصاريفك بذكاء</span>
+    <span class="truncate text-xs text-muted-foreground"
+        >تتبّع مصاريفك بذكاء</span
+    >
 </div>

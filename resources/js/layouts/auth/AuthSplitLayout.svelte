@@ -72,12 +72,16 @@
 
         <!-- Value proposition -->
         <div class="relative z-10 max-w-md">
-            <h2 class="text-3xl font-bold leading-snug tracking-tight text-balance">
+            <h2
+                class="text-3xl font-bold leading-snug tracking-tight text-balance"
+            >
                 تتبّع مصاريفك بذكاء
             </h2>
-            <p class="mt-3 text-base leading-relaxed text-primary-foreground/80">
-                ميزان يمنحك صورة كاملة عن أموالك، ويحوّل أرقامك اليومية إلى قرارات
-                واثقة.
+            <p
+                class="mt-3 text-base leading-relaxed text-primary-foreground/80"
+            >
+                ميزان يمنحك صورة كاملة عن أموالك، ويحوّل أرقامك اليومية إلى
+                قرارات واثقة.
             </p>
 
             <ul class="mt-9 space-y-5">

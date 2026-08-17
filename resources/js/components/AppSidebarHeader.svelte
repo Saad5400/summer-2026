@@ -35,9 +35,32 @@
             class="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground"
         >
             <svg viewBox="0 0 32 32" fill="none" class="size-[18px]">
-                <rect x="6" y="17" width="4.5" height="9" rx="2.25" fill="currentColor" opacity="0.55" />
-                <rect x="13.75" y="11" width="4.5" height="15" rx="2.25" fill="currentColor" opacity="0.8" />
-                <rect x="21.5" y="6" width="4.5" height="20" rx="2.25" fill="currentColor" />
+                <rect
+                    x="6"
+                    y="17"
+                    width="4.5"
+                    height="9"
+                    rx="2.25"
+                    fill="currentColor"
+                    opacity="0.55"
+                />
+                <rect
+                    x="13.75"
+                    y="11"
+                    width="4.5"
+                    height="15"
+                    rx="2.25"
+                    fill="currentColor"
+                    opacity="0.8"
+                />
+                <rect
+                    x="21.5"
+                    y="6"
+                    width="4.5"
+                    height="20"
+                    rx="2.25"
+                    fill="currentColor"
+                />
             </svg>
         </span>
         <span class="text-lg font-bold tracking-tight">ميزان</span>
