@@ -7,19 +7,13 @@
   import type { TransactionType } from '@/types';
   import { COLOR_OPTIONS, ICON_OPTIONS } from './constants';
 
-  type CategoryFormShape = {
-    name: string;
-    type: string;
-    icon: string;
-    color: string;
-    errors: Record<string, string | undefined>;
-  };
-
+  // Inertia useForm() proxy — accessed for name/type/icon/color/errors.
   let {
     form,
     onsubmit,
   }: {
-    form: CategoryFormShape;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    form: any;
     onsubmit?: () => void;
   } = $props();
 

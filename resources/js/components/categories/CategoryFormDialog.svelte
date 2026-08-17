@@ -16,16 +16,8 @@
     DrawerTitle,
   } from '@/components/ui/drawer';
   import { Spinner } from '@/components/ui/spinner';
-  import { IsMobile } from '@/hooks/is-mobile.svelte';
+  import { IsMobile } from '@/hooks/is-mobile.svelte.js';
   import CategoryFormFields from './CategoryFormFields.svelte';
-
-  type CategoryFormShape = {
-    name: string;
-    type: string;
-    icon: string;
-    color: string;
-    errors: Record<string, string | undefined>;
-  };
 
   let {
     open = $bindable(false),
@@ -36,7 +28,8 @@
   }: {
     open?: boolean;
     mode?: 'add' | 'edit';
-    form: CategoryFormShape;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    form: any;
     saving?: boolean;
     onsubmit: () => void;
   } = $props();
@@ -53,12 +46,6 @@
 </script>
 
 {#snippet footer()}
-  <Button class="w-full sm:w-auto" onclick={onsubmit} disabled={saving}>
-    {#if saving}
-      <Spinner class="size-4" />
-    {/if}
-    {submitLabel}
-  </Button>
   <Button
     variant="outline"
     class="w-full sm:w-auto"
@@ -66,6 +53,12 @@
     disabled={saving}
   >
     إلغاء
+  </Button>
+  <Button class="w-full sm:w-auto" onclick={onsubmit} disabled={saving}>
+    {#if saving}
+      <Spinner class="size-4" />
+    {/if}
+    {submitLabel}
   </Button>
 {/snippet}
 
@@ -79,7 +72,7 @@
       <div class="overflow-y-auto px-4 pb-2">
         <CategoryFormFields {form} {onsubmit} />
       </div>
-      <DrawerFooter class="flex-col-reverse gap-2">
+      <DrawerFooter class="flex-col-reverse">
         {@render footer()}
       </DrawerFooter>
     </DrawerContent>
@@ -94,7 +87,9 @@
       <div class="overflow-y-auto p-5">
         <CategoryFormFields {form} {onsubmit} />
       </div>
-      <div class="flex flex-row-reverse gap-2 border-t border-border p-4">
+      <div
+        class="flex flex-col-reverse gap-2 border-t border-border bg-muted/40 p-4 sm:flex-row sm:justify-end"
+      >
         {@render footer()}
       </div>
     </DialogContent>

@@ -210,7 +210,11 @@
   </div>
 
   <!-- Tabs segmented control + content -->
-  <Tabs bind:value={activeTab} class="w-full gap-5">
+  <Tabs
+    value={activeTab}
+    onValueChange={(value) => (activeTab = value as TransactionType)}
+    class="w-full gap-5"
+  >
     <TabsList class="grid h-10 w-full grid-cols-2 rounded-xl sm:w-72">
       <TabsTrigger value="expense" class="gap-2 rounded-lg">
         مصروفات

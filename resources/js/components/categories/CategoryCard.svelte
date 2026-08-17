@@ -58,7 +58,7 @@
         class="inline-flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground opacity-100 transition-all hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:scale-95 md:opacity-0 md:group-hover:opacity-100 md:data-[state=open]:opacity-100"
         aria-label="خيارات الفئة {category.name}"
       >
-        <EllipsisVertical class="size-4.5" />
+        <EllipsisVertical class="size-4" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" class="w-40">
         <DropdownMenuItem onSelect={() => onedit(category)}>
