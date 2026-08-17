@@ -3,6 +3,7 @@
 
   interface Point {
     month: string;
+    short?: string;
     amount: number;
   }
 
@@ -172,14 +173,17 @@
     >
       <title>{p.month}: {formatMoney(p.amount)}</title>
     </circle>
-    <text
-      x={p.x}
-      y={H - 10}
-      text-anchor="middle"
-      font-size="9.5"
-      fill="var(--muted-foreground)"
-    >
-      {p.month}
-    </text>
+    <!-- thin out labels when crowded: every 2nd point, always the last -->
+    {#if data.length <= 6 || i % 2 === 0 || i === data.length - 1}
+      <text
+        x={p.x}
+        y={H - 10}
+        text-anchor="middle"
+        font-size="10"
+        fill="var(--muted-foreground)"
+      >
+        {p.short ?? p.month}
+      </text>
+    {/if}
   {/each}
 </svg>
