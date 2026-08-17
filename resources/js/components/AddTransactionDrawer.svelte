@@ -3,12 +3,18 @@
   import Plus from 'lucide-svelte/icons/plus';
   import Save from 'lucide-svelte/icons/save';
   import X from 'lucide-svelte/icons/x';
-  import { fly } from 'svelte/transition';
+  import Check from 'lucide-svelte/icons/check';
+  import ArrowDownLeft from 'lucide-svelte/icons/arrow-down-left';
+  import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
+  import { fade, fly } from 'svelte/transition';
+  import { cubicOut } from 'svelte/easing';
+  import CategoryIcon from '@/components/CategoryIcon.svelte';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
   import { Label } from '@/components/ui/label';
   import { Spinner } from '@/components/ui/spinner';
   import { store, update } from '@/routes/transactions';
+  import { cn } from '@/lib/utils';
   import type { Category, Transaction, TransactionType } from '@/types';
 
   let {
@@ -16,6 +22,7 @@
     onOpenChange,
     editTransaction = null,
     categories = [],
+    recentCategories = [],
     onSuccess,
   }: {
     open?: boolean;
@@ -30,6 +37,7 @@
 
   let transactionType: TransactionType = $state('expense');
   let didInit = $state(false);
+  let isDesktop = $state(false);
 
   const form = useForm({
     amount: '',
@@ -43,10 +51,29 @@
     categories.filter((c) => c.type === transactionType),
   );
 
+  const recentFiltered = $derived(
+    recentCategories
+      .filter((c) => c.type === transactionType)
+      .slice(0, 4),
+  );
+
+  const selectedCategory = $derived(
+    categories.find((c) => String(c.id) === form.category_id) ?? null,
+  );
+
   function selectCategory(cat: Category) {
     form.category_id = String(cat.id);
     form.clearErrors('category_id');
   }
+
+  $effect(() => {
+    const mq = window.matchMedia('(min-width: 640px)');
+    const apply = () => (isDesktop = mq.matches);
+    apply();
+    mq.addEventListener('change', apply);
+
+    return () => mq.removeEventListener('change', apply);
+  });
 
   $effect(() => {
     if (!open) {
@@ -128,6 +155,10 @@
       close();
     }
   }
+
+  const canSubmit = $derived(
+    !form.processing && !!form.amount && !!form.category_id,
+  );
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -136,27 +167,58 @@
   <div class="fixed inset-0 z-50">
     <button
       type="button"
-      class="fixed inset-0 bg-black/50"
+      class="fixed inset-0 bg-foreground/40 backdrop-blur-[2px]"
       aria-label="إغلاق"
       onclick={close}
+      transition:fade={{ duration: 200 }}
     ></button>
+
     <div
-      class="fixed inset-y-0 end-0 w-full max-w-sm flex flex-col gap-5 overflow-y-auto border-s bg-background p-6 shadow-lg"
-      in:fly={{ x: 320, duration: 260, opacity: 1 }}
+      class="fixed inset-x-0 bottom-0 flex max-h-[92vh] flex-col overflow-hidden rounded-t-2xl border-t bg-background shadow-elevated sm:inset-y-0 sm:end-0 sm:bottom-auto sm:inset-x-auto sm:max-h-none sm:w-full sm:max-w-md sm:rounded-none sm:rounded-s-2xl sm:border-s sm:border-t-0"
+      in:fly={isDesktop
+        ? { x: -32, duration: 280, opacity: 0, easing: cubicOut }
+        : { y: 560, duration: 360, opacity: 1, easing: cubicOut }}
     >
-      <div class="flex items-center justify-between">
-        <h2 class="text-lg font-semibold">
-          {#if isEditing}
-            {editTransaction.type === 'expense' ? 'تعديل مصروف' : 'تعديل دخل'}
-          {:else if transactionType === 'expense'}
-            إضافة مصروف
-          {:else}
-            إضافة دخل
-          {/if}
-        </h2>
+      <!-- Grab handle (mobile) -->
+      <div class="flex shrink-0 justify-center pt-3 sm:hidden">
+        <span class="h-1.5 w-10 rounded-full bg-muted-foreground/25"></span>
+      </div>
+
+      <!-- Header -->
+      <div class="flex shrink-0 items-center justify-between gap-3 px-5 pt-4 pb-3 sm:pt-6">
+        <div class="flex items-center gap-3">
+          <span
+            class={cn(
+              'flex size-9 items-center justify-center rounded-xl transition-colors',
+              transactionType === 'expense'
+                ? 'bg-expense-muted text-expense'
+                : 'bg-income-muted text-income',
+            )}
+          >
+            {#if transactionType === 'expense'}
+              <ArrowDownLeft class="size-5" />
+            {:else}
+              <ArrowUpRight class="size-5" />
+            {/if}
+          </span>
+          <div>
+            <h2 class="text-base font-semibold leading-tight">
+              {#if isEditing}
+                تعديل معاملة
+              {:else if transactionType === 'expense'}
+                إضافة مصروف
+              {:else}
+                إضافة دخل
+              {/if}
+            </h2>
+            <p class="text-xs text-muted-foreground">
+              {transactionType === 'expense' ? 'سجّل مصروفاً جديداً' : 'سجّل دخلاً جديداً'}
+            </p>
+          </div>
+        </div>
         <button
           type="button"
-          class="rounded-sm opacity-70 hover:opacity-100"
+          class="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground active:scale-95"
           aria-label="إغلاق"
           onclick={close}
         >
@@ -164,74 +226,152 @@
         </button>
       </div>
 
-      <div class="flex rounded-lg border p-1">
-        <button
-          class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {transactionType === 'expense'
-            ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-            : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => handleTypeChange('expense')}
-        >
-          مصروف
-        </button>
-        <button
-          class="flex-1 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {transactionType === 'income'
-            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-            : 'text-muted-foreground hover:text-foreground'}"
-          onclick={() => handleTypeChange('income')}
-        >
-          دخل
-        </button>
-      </div>
+      <!-- Scrollable body -->
+      <div class="flex-1 overflow-y-auto px-5 pb-5">
+        <!-- Type toggle -->
+        <div class="grid grid-cols-2 gap-2 rounded-xl bg-muted p-1">
+          <button
+            type="button"
+            class={cn(
+              'flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]',
+              transactionType === 'expense'
+                ? 'bg-expense text-expense-foreground shadow-soft'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+            onclick={() => handleTypeChange('expense')}
+          >
+            <ArrowDownLeft class="size-4" />
+            مصروف
+          </button>
+          <button
+            type="button"
+            class={cn(
+              'flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]',
+              transactionType === 'income'
+                ? 'bg-income text-income-foreground shadow-soft'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+            onclick={() => handleTypeChange('income')}
+          >
+            <ArrowUpRight class="size-4" />
+            دخل
+          </button>
+        </div>
 
-      <div class="flex flex-col gap-4">
-        <div class="space-y-1.5">
-          <Label for="add-amount">المبلغ (ر.س) <span class="text-destructive">*</span></Label>
-          <Input
-            id="add-amount"
-            type="number"
-            placeholder="0.00"
-            step="0.01"
-            min="0"
-            bind:value={form.amount}
-          />
+        <!-- Big amount -->
+        <div class="mt-5">
+          <div
+            class={cn(
+              'flex flex-col items-center rounded-2xl border bg-card px-4 py-5 transition-colors focus-within:ring-2',
+              transactionType === 'expense'
+                ? 'focus-within:border-expense focus-within:ring-expense/20'
+                : 'focus-within:border-income focus-within:ring-income/20',
+            )}
+          >
+            <span class="text-xs font-medium text-muted-foreground">المبلغ</span>
+            <div class="mt-1 flex items-baseline gap-1.5">
+              <input
+                id="add-amount"
+                type="number"
+                inputmode="decimal"
+                placeholder="0"
+                step="0.01"
+                min="0"
+                dir="ltr"
+                bind:value={form.amount}
+                class={cn(
+                  'w-full min-w-0 max-w-[8ch] border-0 bg-transparent p-0 text-center text-4xl font-bold tabular-nums tracking-tight outline-none placeholder:text-muted-foreground/40 focus:ring-0',
+                  transactionType === 'expense' ? 'text-expense' : 'text-income',
+                )}
+              />
+              <span class="shrink-0 text-lg font-semibold text-muted-foreground">ر.س</span>
+            </div>
+          </div>
           {#if form.errors.amount}
-            <p class="text-xs text-destructive">{form.errors.amount}</p>
+            <p class="mt-1.5 text-center text-xs text-destructive">{form.errors.amount}</p>
           {/if}
         </div>
 
-        <div class="space-y-1.5">
-          <Label for="add-category">الفئة <span class="text-destructive">*</span></Label>
+        <!-- Recent quick pick -->
+        {#if recentFiltered.length > 0}
+          <div class="mt-5">
+            <p class="mb-2 text-xs font-medium text-muted-foreground">الأكثر استخداماً</p>
+            <div class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+              {#each recentFiltered as cat (cat.id)}
+                <button
+                  type="button"
+                  onclick={() => selectCategory(cat)}
+                  class={cn(
+                    'flex shrink-0 items-center gap-2 rounded-full border py-1.5 pe-3 ps-1.5 text-sm font-medium transition-all duration-200 active:scale-95',
+                    form.category_id === String(cat.id)
+                      ? 'border-primary bg-primary/5 text-foreground ring-1 ring-primary'
+                      : 'border-border text-muted-foreground hover:bg-accent hover:text-foreground',
+                  )}
+                >
+                  <CategoryIcon icon={cat.icon} color={cat.color} size="sm" />
+                  {cat.name}
+                </button>
+              {/each}
+            </div>
+          </div>
+        {/if}
 
-          <div class="grid grid-cols-2 gap-1.5">
+        <!-- Category grid -->
+        <div class="mt-5">
+          <div class="mb-2 flex items-center justify-between">
+            <Label class="text-xs font-medium text-muted-foreground">
+              الفئة <span class="text-destructive">*</span>
+            </Label>
+            {#if selectedCategory}
+              <span class="text-xs font-medium text-foreground">{selectedCategory.name}</span>
+            {/if}
+          </div>
+
+          <div class="grid grid-cols-4 gap-2">
             {#each filteredCategories as cat (cat.id)}
+              {@const active = form.category_id === String(cat.id)}
               <button
                 type="button"
-                class="flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm font-medium transition-all hover:scale-[1.02] active:scale-[0.98] {form.category_id === String(cat.id)
-                  ? 'ring-2 ring-foreground ring-offset-1 bg-muted'
-                  : 'hover:bg-muted/50'}"
-                style="{form.category_id === String(cat.id) ? 'border-color: ' + (cat.color ?? '#6b7280') + ';' : ''}"
                 onclick={() => selectCategory(cat)}
+                class={cn(
+                  'relative flex flex-col items-center gap-1.5 rounded-xl border p-2.5 transition-all duration-200 active:scale-95',
+                  active
+                    ? 'border-primary bg-primary/5 ring-2 ring-primary'
+                    : 'border-border hover:border-border hover:bg-accent',
+                )}
               >
-                <span
-                  class="size-3 shrink-0 rounded-full"
-                  style="background-color: {cat.color ?? '#6b7280'}"
-                ></span>
-                <span class="truncate">{cat.name}</span>
+                {#if active}
+                  <span class="absolute -top-1.5 -end-1.5 flex size-4 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                    <Check class="size-2.5" />
+                  </span>
+                {/if}
+                <CategoryIcon icon={cat.icon} color={cat.color} size="md" />
+                <span class="w-full truncate text-center text-[11px] font-medium leading-tight">
+                  {cat.name}
+                </span>
               </button>
             {/each}
           </div>
 
+          {#if filteredCategories.length === 0}
+            <p class="rounded-xl border border-dashed py-6 text-center text-xs text-muted-foreground">
+              لا توجد فئات لهذا النوع
+            </p>
+          {/if}
           {#if form.errors.category_id}
-            <p class="text-xs text-destructive">{form.errors.category_id}</p>
+            <p class="mt-1.5 text-xs text-destructive">{form.errors.category_id}</p>
           {/if}
         </div>
 
-        <div class="space-y-1.5">
-          <Label for="add-description">الوصف <span class="text-xs text-muted-foreground">(اختياري)</span></Label>
+        <!-- Description -->
+        <div class="mt-5 space-y-1.5">
+          <Label for="add-description" class="text-xs font-medium text-muted-foreground">
+            الوصف <span class="font-normal">(اختياري)</span>
+          </Label>
           <Input
             id="add-description"
             type="text"
-            placeholder="اختياري ..."
+            placeholder="مثال: قهوة الصباح"
             bind:value={form.description}
           />
           {#if form.errors.description}
@@ -239,8 +379,9 @@
           {/if}
         </div>
 
-        <div class="space-y-1.5">
-          <Label for="add-date">التاريخ</Label>
+        <!-- Date -->
+        <div class="mt-4 space-y-1.5">
+          <Label for="add-date" class="text-xs font-medium text-muted-foreground">التاريخ</Label>
           <Input id="add-date" type="date" bind:value={form.date} />
           {#if form.errors.date}
             <p class="text-xs text-destructive">{form.errors.date}</p>
@@ -248,7 +389,8 @@
         </div>
       </div>
 
-      <div class="mt-auto flex gap-2 pt-4">
+      <!-- Footer -->
+      <div class="flex shrink-0 gap-2 border-t bg-background px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
         <Button
           variant="outline"
           class="flex-1"
@@ -258,16 +400,21 @@
           إلغاء
         </Button>
         <Button
-          class="flex-1 {transactionType === 'expense' ? 'bg-red-600 hover:bg-red-700' : ''}"
+          class={cn(
+            'flex-[1.4]',
+            transactionType === 'expense'
+              ? 'bg-expense text-expense-foreground hover:bg-expense/90'
+              : 'bg-income text-income-foreground hover:bg-income/90',
+          )}
           onclick={handleSubmit}
-          disabled={form.processing || !form.amount || !form.category_id}
+          disabled={!canSubmit}
         >
           {#if form.processing}
             <Spinner class="size-4" />
             جاري الحفظ...
           {:else if isEditing}
             <Save class="size-4" />
-            حفظ
+            حفظ التعديلات
           {:else}
             <Plus class="size-4" />
             إضافة
