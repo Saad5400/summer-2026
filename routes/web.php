@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AssistantStreamController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ReportController;
@@ -14,6 +15,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('reports', [ReportController::class, 'index'])->name('reports');
     Route::inertia('chat', 'chat/Index')->name('chat');
     Route::resource('categories', CategoryController::class)->only(['index', 'store', 'update', 'destroy']);
+    Route::inertia('assistant', 'assistant/Index')->name('assistant');
+    Route::post('assistant/stream', AssistantStreamController::class)->name('assistant.stream');
 });
 
 require __DIR__.'/settings.php';

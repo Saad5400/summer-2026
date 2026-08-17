@@ -2,6 +2,7 @@
     import { Link } from '@inertiajs/svelte';
     import ArrowLeftRight from 'lucide-svelte/icons/arrow-left-right';
     import BarChart3 from 'lucide-svelte/icons/bar-chart-3';
+    import Bot from 'lucide-svelte/icons/bot';
     import LayoutGrid from 'lucide-svelte/icons/layout-grid';
     import Tags from 'lucide-svelte/icons/tags';
     import type { Snippet } from 'svelte';
@@ -19,7 +20,7 @@
         SidebarMenuItem,
     } from '@/components/ui/sidebar';
     import { toUrl } from '@/lib/utils';
-    import { dashboard } from '@/routes';
+    import { assistant, dashboard } from '@/routes';
     import type { NavItem } from '@/types';
 
     let {
@@ -48,6 +49,11 @@
             title: 'الفئات',
             href: '/categories',
             icon: Tags,
+        },
+        {
+            title: 'المساعد المالي',
+            href: assistant(),
+            icon: Bot,
         },
     ];
 
