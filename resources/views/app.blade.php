@@ -7,8 +7,8 @@
         <link rel="icon" href="/favicon.ico" sizes="any">
         <link rel="icon" href="/favicon.svg" type="image/svg+xml">
         <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-
-        @fonts
+        <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+        <meta name="theme-color" content="#171a24" media="(prefers-color-scheme: dark)">
 
         @vite(['resources/css/app.css', 'resources/js/app.ts'])
         <x-inertia::head>

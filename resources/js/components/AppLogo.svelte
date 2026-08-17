@@ -3,12 +3,13 @@
 </script>
 
 <div
-    class="flex aspect-square size-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"
+    class="flex aspect-square size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft"
 >
-    <AppLogoIcon class="size-5 fill-current text-white dark:text-black" />
+    <AppLogoIcon class="size-5" />
 </div>
-<div class="ms-1 grid flex-1 text-start text-sm">
-    <span class="mb-0.5 truncate leading-tight font-semibold"
-        >Laravel Starter Kit</span
+<div class="ms-2 grid flex-1 text-start">
+    <span class="truncate text-base leading-tight font-bold tracking-tight"
+        >ميزان</span
     >
+    <span class="truncate text-xs text-muted-foreground">تتبّع مصاريفك بذكاء</span>
 </div>
