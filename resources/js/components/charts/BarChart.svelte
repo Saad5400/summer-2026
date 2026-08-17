@@ -84,7 +84,7 @@
     </span>
   </div>
 
-  <svg viewBox="0 0 {W} {H}" class="h-auto w-full overflow-visible" role="img">
+  <svg viewBox="0 0 {W} {H}" class="h-auto w-full overflow-visible" role="img" aria-label="مقارنة الإيرادات والمصروفات الشهرية">
     <!-- gridlines + y labels (labels on the right for RTL) -->
     {#each ticks as tick (tick)}
       {@const gy = y(tick)}

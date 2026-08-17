@@ -11,35 +11,39 @@
 
 <script lang="ts">
   import { usePage, router, useForm } from '@inertiajs/svelte';
-  import Check from 'lucide-svelte/icons/check';
-  import Pencil from 'lucide-svelte/icons/pencil';
   import Plus from 'lucide-svelte/icons/plus';
-  import Trash from 'lucide-svelte/icons/trash';
-  import X from 'lucide-svelte/icons/x';
+  import Shapes from 'lucide-svelte/icons/shapes';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
+  import TriangleAlert from 'lucide-svelte/icons/triangle-alert';
+  import { onMount } from 'svelte';
   import AppHead from '@/components/AppHead.svelte';
-  import Heading from '@/components/Heading.svelte';
+  import CategoryCard from '@/components/categories/CategoryCard.svelte';
+  import CategoryFormDialog from '@/components/categories/CategoryFormDialog.svelte';
+  import { COLOR_OPTIONS, ICON_OPTIONS } from '@/components/categories/constants';
+  import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+  } from '@/components/ui/alert-dialog';
   import { Button } from '@/components/ui/button';
-  import { Input } from '@/components/ui/input';
+  import {
+    Empty,
+    EmptyContent,
+    EmptyDescription,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+  } from '@/components/ui/empty';
+  import { Skeleton } from '@/components/ui/skeleton';
   import { Spinner } from '@/components/ui/spinner';
+  import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
   import { store, update, destroy } from '@/routes/categories';
   import type { Category, TransactionType } from '@/types';
-
-  const COLORS = [
-    '#ef4444',
-    '#f97316',
-    '#eab308',
-    '#22c55e',
-    '#14b8a6',
-    '#06b6d4',
-    '#3b82f6',
-    '#6366f1',
-    '#8b5cf6',
-    '#a855f7',
-    '#d946ef',
-    '#ec4899',
-    '#f43f5e',
-    '#6b7280',
-  ];
 
   const { props } = usePage<{
     expenseCategories: Category[];
@@ -50,295 +54,233 @@
   let incomeCategories = $derived(props.incomeCategories);
 
   let activeTab = $state<TransactionType>('expense');
-  let adding = $state(false);
+
+  // Brief shimmer on first client paint (client-rendered SPA, no SSR).
+  let ready = $state(false);
+  onMount(() => {
+    ready = true;
+  });
+
+  // --- Add / Edit dialog ---------------------------------------------------
+  let formOpen = $state(false);
+  let formMode = $state<'add' | 'edit'>('add');
   let editingId = $state<number | null>(null);
-  let confirmDeleteId = $state<number | null>(null);
 
-  const addForm = useForm({ name: '', type: 'expense' as TransactionType, icon: '', color: COLORS[0] });
-  const editForm = useForm({ name: '', icon: '', color: '', type: '' });
+  const form = useForm({
+    name: '',
+    type: 'expense' as TransactionType,
+    icon: ICON_OPTIONS[0] as string,
+    color: COLOR_OPTIONS[0] as string,
+  });
 
-  const displayedCategories = $derived(
-    activeTab === 'expense' ? expenseCategories : incomeCategories,
-  );
-
-  function handleTabChange(tab: TransactionType) {
-    activeTab = tab;
-    addForm.type = activeTab;
-    addForm.clearErrors();
-  }
-
-  function startAdd() {
-    adding = true;
+  function openAdd() {
+    formMode = 'add';
     editingId = null;
-    confirmDeleteId = null;
-    addForm.reset();
-    addForm.color = COLORS[0];
-    addForm.type = activeTab;
+    form.clearErrors();
+    form.reset();
+    form.type = activeTab;
+    form.icon = ICON_OPTIONS[0];
+    form.color = COLOR_OPTIONS[0];
+    formOpen = true;
   }
 
-  function cancelAdd() {
-    adding = false;
-    addForm.reset();
-    addForm.color = COLORS[0];
-  }
-
-  function saveNew() {
-    addForm.type = activeTab;
-    addForm.post(store.url(), {
-      preserveScroll: true,
-      onSuccess: () => {
-        adding = false;
-        addForm.reset();
-        addForm.color = COLORS[0];
-      },
-    });
-  }
-
-  function startEdit(cat: Category) {
+  function openEdit(cat: Category) {
+    formMode = 'edit';
     editingId = cat.id;
-    editForm.name = cat.name;
-    editForm.icon = cat.icon;
-    editForm.color = cat.color;
-    editForm.type = cat.type;
-    adding = false;
-    confirmDeleteId = null;
+    form.clearErrors();
+    form.name = cat.name;
+    form.type = cat.type;
+    form.icon = cat.icon ?? ICON_OPTIONS[0];
+    form.color = cat.color ?? COLOR_OPTIONS[0];
+    formOpen = true;
   }
 
-  function cancelEdit() {
-    editingId = null;
-    editForm.reset();
-    editForm.color = COLORS[0];
+  function submitForm() {
+    if (formMode === 'add') {
+      form.post(store.url(), {
+        preserveScroll: true,
+        onSuccess: () => {
+          formOpen = false;
+          form.reset();
+          form.color = COLOR_OPTIONS[0];
+          form.icon = ICON_OPTIONS[0];
+        },
+      });
+    } else if (editingId !== null) {
+      form.put(update.url(editingId), {
+        preserveScroll: true,
+        onSuccess: () => {
+          formOpen = false;
+        },
+      });
+    }
   }
 
-  function saveEdit() {
-    if (editingId === null) {
-return;
-}
+  // --- Delete confirmation -------------------------------------------------
+  let deleteOpen = $state(false);
+  let deleteTarget = $state<Category | null>(null);
+  let deleting = $state(false);
 
-    editForm.put(update.url(editingId), {
-      preserveScroll: true,
-      onSuccess: () => {
-        editingId = null;
-      },
-    });
-  }
-
-  function confirmDelete(cat: Category) {
-    confirmDeleteId = cat.id;
-    editingId = null;
-    adding = false;
-  }
-
-  function cancelDelete() {
-    confirmDeleteId = null;
+  function requestDelete(cat: Category) {
+    deleteTarget = cat;
+    deleteOpen = true;
   }
 
   function executeDelete() {
-    if (confirmDeleteId === null) {
-return;
-}
+    if (deleteTarget === null) {
+      return;
+    }
 
-    router.delete(destroy.url(confirmDeleteId), {
+    router.delete(destroy.url(deleteTarget.id), {
       preserveScroll: true,
+      onStart: () => (deleting = true),
+      onFinish: () => (deleting = false),
       onSuccess: () => {
-        confirmDeleteId = null;
+        deleteOpen = false;
+        deleteTarget = null;
       },
     });
   }
 
-  function isSystemCategory(cat: Category): boolean {
-    return cat.user_id == null;
-  }
-
-  let saving = $derived(addForm.processing || editForm.processing);
+  const saving = $derived(form.processing);
 </script>
 
 <AppHead title="الفئات" />
 
-<div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
-  <div class="flex items-center justify-between">
-    <Heading
-      title="الفئات"
-      description="إدارة فئات المصروفات والإيرادات"
-    />
-    <Button onclick={startAdd}>
+{#snippet grid(cats: Category[])}
+  {#if !ready}
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {#each Array(6) as _, i (i)}
+        <div class="flex items-center gap-3 rounded-2xl border border-border bg-card p-3.5 md:p-4">
+          <Skeleton class="size-12 rounded-2xl" />
+          <div class="flex flex-1 flex-col gap-2">
+            <Skeleton class="h-3.5 w-2/3 rounded" />
+            <Skeleton class="h-2.5 w-1/3 rounded" />
+          </div>
+        </div>
+      {/each}
+    </div>
+  {:else if cats.length === 0}
+    <Empty class="rounded-2xl border border-dashed border-border bg-card/40 py-14">
+      <EmptyHeader>
+        <EmptyMedia variant="icon" class="size-12 rounded-2xl bg-muted text-muted-foreground">
+          <Shapes class="size-6" />
+        </EmptyMedia>
+        <EmptyTitle>
+          {activeTab === 'expense' ? 'لا توجد فئات مصروفات' : 'لا توجد فئات إيرادات'}
+        </EmptyTitle>
+        <EmptyDescription>
+          أنشئ أول فئة لتنظيم {activeTab === 'expense' ? 'مصروفاتك' : 'إيراداتك'} بسهولة.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+        <Button onclick={openAdd}>
+          <Plus class="size-4" />
+          إضافة فئة
+        </Button>
+      </EmptyContent>
+    </Empty>
+  {:else}
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {#each cats as cat, i (cat.id)}
+        <CategoryCard
+          category={cat}
+          index={i}
+          onedit={openEdit}
+          ondelete={requestDelete}
+        />
+      {/each}
+    </div>
+  {/if}
+{/snippet}
+
+<div class="flex flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
+  <!-- Header -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div class="space-y-1">
+      <h1 class="text-2xl font-semibold tracking-tight text-foreground">الفئات</h1>
+      <p class="text-sm text-muted-foreground">
+        نظّم فئات مصروفاتك وإيراداتك في مكان واحد.
+      </p>
+    </div>
+    <Button size="lg" class="w-full sm:w-auto" onclick={openAdd}>
       <Plus class="size-4" />
       إضافة فئة
     </Button>
   </div>
 
-  <div class="flex rounded-lg border p-1 w-fit">
-    <button
-      class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'expense'
-        ? 'bg-muted text-foreground shadow-sm'
-        : 'text-muted-foreground hover:text-foreground'}"
-      onclick={() => handleTabChange('expense')}
-    >
-      مصروفات
-    </button>
-    <button
-      class="rounded-md px-4 py-1.5 text-sm font-medium transition-colors {activeTab === 'income'
-        ? 'bg-muted text-foreground shadow-sm'
-        : 'text-muted-foreground hover:text-foreground'}"
-      onclick={() => handleTabChange('income')}
-    >
-      إيرادات
-    </button>
-  </div>
-
-  <div class="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-    {#each displayedCategories as cat (cat.id)}
-      {#if editingId === cat.id}
-        <div
-          class="flex flex-col gap-3 rounded-xl border-2 border-primary/30 p-3"
+  <!-- Tabs segmented control + content -->
+  <Tabs bind:value={activeTab} class="w-full gap-5">
+    <TabsList class="grid h-10 w-full grid-cols-2 rounded-xl sm:w-72">
+      <TabsTrigger value="expense" class="gap-2 rounded-lg">
+        مصروفات
+        <span
+          class="min-w-5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground group-data-[variant=default]/tabs-list:data-active:bg-expense-muted group-data-[variant=default]/tabs-list:data-active:text-expense"
         >
-          <div class="flex items-center gap-3">
-            <div
-              class="size-5 shrink-0 rounded-full ring-2 ring-offset-2"
-              style="background-color: {editForm.color}; --tw-ring-color: {editForm.color}"
-            ></div>
-            <Input
-              class="flex-1"
-              bind:value={editForm.name}
-              placeholder="اسم الفئة"
-            />
-          </div>
-          {#if editForm.errors.name}
-            <p class="text-xs text-destructive">{editForm.errors.name}</p>
-          {/if}
-          <div class="flex flex-wrap gap-1.5">
-            {#each COLORS as color (color)}
-              <button
-                class="size-10 md:size-6 rounded-full transition-all hover:scale-110 {editForm.color === color
-                  ? 'ring-2 ring-foreground ring-offset-2'
-                  : ''}"
-                style="background-color: {color}"
-                onclick={() => (editForm.color = color)}
-                type="button"
-                aria-label="اختيار لون {color}"
-              ></button>
-            {/each}
-          </div>
-          <div class="flex gap-2">
-            <Button size="sm" onclick={saveEdit} disabled={saving}>
-              {#if saving}
-                <Spinner class="size-3" />
-              {:else}
-                <Check class="size-3" />
-              {/if}
-              حفظ
-            </Button>
-            <Button variant="outline" size="sm" onclick={cancelEdit}>
-              <X class="size-3" />
-              إلغاء
-            </Button>
-          </div>
-        </div>
-      {:else if confirmDeleteId === cat.id}
-        <div class="flex items-center gap-3 rounded-xl border border-destructive/40 bg-destructive/5 p-3">
-          <div
-            class="size-4 shrink-0 rounded-full"
-            style="background-color: {cat.color}"
-          ></div>
-          <span class="flex-1 text-sm font-medium">{cat.name}</span>
-          <p class="whitespace-nowrap text-xs font-medium text-destructive">حذف؟</p>
-          <div class="flex gap-1">
-            <button
-              class="inline-flex size-7 items-center justify-center rounded-md bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onclick={executeDelete}
-              type="button"
-            >
-              <Check class="size-3" />
-            </button>
-            <button
-              class="inline-flex size-7 items-center justify-center rounded-md border hover:bg-muted"
-              onclick={cancelDelete}
-              type="button"
-            >
-              <X class="size-3" />
-            </button>
-          </div>
-        </div>
-      {:else}
-        <div class="group flex items-center gap-3 rounded-xl border p-3">
-          <div
-            class="size-4 shrink-0 rounded-full"
-            style="background-color: {cat.color}"
-          ></div>
-          <span class="flex-1 text-sm font-medium">{cat.name}</span>
-          {#if isSystemCategory(cat)}
-            <span class="text-[10px] text-muted-foreground/60 px-1">افتراضي</span>
-          {:else}
-            <button
-              class="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-              onclick={() => startEdit(cat)}
-              type="button"
-            >
-              <Pencil class="size-3" />
-              تعديل
-            </button>
-            <button
-              class="flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-              onclick={() => confirmDelete(cat)}
-              type="button"
-            >
-              <Trash class="size-3" />
-              حذف
-            </button>
-          {/if}
-        </div>
-      {/if}
-    {/each}
+          {expenseCategories.length}
+        </span>
+      </TabsTrigger>
+      <TabsTrigger value="income" class="gap-2 rounded-lg">
+        إيرادات
+        <span
+          class="min-w-5 rounded-full bg-muted-foreground/15 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-muted-foreground group-data-[variant=default]/tabs-list:data-active:bg-income-muted group-data-[variant=default]/tabs-list:data-active:text-income"
+        >
+          {incomeCategories.length}
+        </span>
+      </TabsTrigger>
+    </TabsList>
 
-    {#if adding}
-      <div class="flex flex-col gap-3 rounded-xl border-2 border-dashed border-muted-foreground/25 p-3">
-        <Input
-          bind:value={addForm.name}
-          placeholder="اسم الفئة"
-        />
-        {#if addForm.errors.name}
-          <p class="text-xs text-destructive">{addForm.errors.name}</p>
-        {/if}
-        <div class="flex flex-wrap gap-1.5">
-          {#each COLORS as color (color)}
-            <button
-              class="size-10 md:size-6 rounded-full transition-all hover:scale-110 {addForm.color === color
-                ? 'ring-2 ring-foreground ring-offset-2'
-                : ''}"
-              style="background-color: {color}"
-              onclick={() => (addForm.color = color)}
-              type="button"
-              aria-label="اختيار لون {color}"
-            ></button>
-          {/each}
-        </div>
-        <div class="flex gap-2">
-          <Button size="sm" onclick={saveNew} disabled={saving}>
-            {#if saving}
-              <Spinner class="size-3" />
-            {:else}
-              <Check class="size-3" />
-            {/if}
-            حفظ
-          </Button>
-          <Button variant="outline" size="sm" onclick={cancelAdd}>
-            <X class="size-3" />
-            إلغاء
-          </Button>
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  {#if displayedCategories.length === 0 && !adding}
-    <div class="flex flex-col items-center justify-center gap-3 py-16 text-muted-foreground">
-      <p class="text-sm">
-        {activeTab === 'expense' ? 'لا توجد فئات مصروفات' : 'لا توجد فئات إيرادات'}
-      </p>
-      <Button variant="outline" size="sm" onclick={startAdd}>
-        <Plus class="size-3" />
-        إضافة فئة
-      </Button>
-    </div>
-  {/if}
+    <TabsContent value="expense" class="mt-0 focus-visible:outline-none">
+      {@render grid(expenseCategories)}
+    </TabsContent>
+    <TabsContent value="income" class="mt-0 focus-visible:outline-none">
+      {@render grid(incomeCategories)}
+    </TabsContent>
+  </Tabs>
 </div>
+
+<!-- Add / Edit dialog (Dialog on desktop, Drawer on mobile) -->
+<CategoryFormDialog
+  bind:open={formOpen}
+  mode={formMode}
+  {form}
+  {saving}
+  onsubmit={submitForm}
+/>
+
+<!-- Delete confirmation -->
+<AlertDialog bind:open={deleteOpen}>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <div
+        class="mx-auto mb-1 flex size-11 items-center justify-center rounded-full bg-destructive/10 text-destructive sm:mx-0"
+      >
+        <TriangleAlert class="size-5" />
+      </div>
+      <AlertDialogTitle>حذف الفئة</AlertDialogTitle>
+      <AlertDialogDescription>
+        هل أنت متأكد من حذف فئة
+        <span class="font-semibold text-foreground">«{deleteTarget?.name}»</span>؟
+        لا يمكن التراجع عن هذا الإجراء.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel disabled={deleting}>إلغاء</AlertDialogCancel>
+      <AlertDialogAction
+        variant="destructive"
+        disabled={deleting}
+        onclick={(e: MouseEvent) => {
+          e.preventDefault();
+          executeDelete();
+        }}
+      >
+        {#if deleting}
+          <Spinner class="size-4" />
+        {:else}
+          <Trash2 class="size-4" />
+        {/if}
+        حذف
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>

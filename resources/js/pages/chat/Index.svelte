@@ -10,12 +10,11 @@
 </script>
 
 <script lang="ts">
-  import Bot from 'lucide-svelte/icons/bot';
-  import MessageSquareText from 'lucide-svelte/icons/message-square-text';
   import Send from 'lucide-svelte/icons/send';
-  import User from 'lucide-svelte/icons/user';
+  import Sparkles from 'lucide-svelte/icons/sparkles';
   import AppHead from '@/components/AppHead.svelte';
-  import Heading from '@/components/Heading.svelte';
+  import AssistantAvatar from '@/components/assistant/AssistantAvatar.svelte';
+  import TypingIndicator from '@/components/assistant/TypingIndicator.svelte';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
 
@@ -119,79 +118,76 @@
 
 <AppHead title="المساعد الذكي" />
 
-<div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
-  <Heading
-    title="المساعد الذكي"
-    description="اسأل عن مصروفاتك، أضف معاملات، واحصل على نصائح مالية"
-  />
+<div class="-mb-24 flex h-[calc(100dvh-4rem)] flex-1 flex-col md:-mb-8">
+  <!-- Header -->
+  <header
+    class="flex items-center gap-3 border-b border-border/60 bg-background/80 px-4 py-3 backdrop-blur-xl md:px-6"
+  >
+    <AssistantAvatar size="md" />
+    <div class="min-w-0">
+      <h1 class="truncate text-sm font-semibold">المساعد الذكي</h1>
+      <p class="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span class="size-1.5 rounded-full bg-income {isThinking ? 'animate-pulse' : ''}"></span>
+        {isThinking ? 'يكتب الآن…' : 'نسخة تجريبية'}
+      </p>
+    </div>
+  </header>
 
-  <div class="flex-1 flex flex-col overflow-hidden">
-    <div
-      bind:this={chatContainer}
-      class="flex-1 overflow-y-auto space-y-4 px-1 pb-4"
-    >
+  <!-- Messages -->
+  <div
+    bind:this={chatContainer}
+    class="flex-1 overflow-y-auto scroll-smooth px-4 py-6 md:px-6"
+    aria-live="polite"
+    aria-label="منطقة الرسائل"
+  >
+    <div class="mx-auto flex w-full max-w-3xl flex-col gap-5">
       {#each messages as msg (msg.id)}
-        <div class="flex {msg.sender === 'user' ? 'justify-end' : 'justify-start'}">
-          <div
-            class="flex max-w-[80%] gap-2"
-          >
-            {#if msg.sender === 'ai'}
-              <div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                <Bot class="size-3.5 text-primary" />
-              </div>
-            {/if}
-
-            <div
-              class="rounded-xl px-4 py-2.5 {msg.sender === 'user'
-                ? 'bg-primary text-primary-foreground rounded-es-sm'
-                : 'bg-muted rounded-ee-sm'}"
-            >
-              <p class="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-              <p
-                class="mt-1 text-[0.65rem] opacity-60 {msg.sender === 'user' ? 'text-right' : 'text-left'}"
+        {#if msg.sender === 'user'}
+          <div class="flex animate-fade-in-up justify-end">
+            <div class="flex max-w-[85%] flex-col items-end gap-1">
+              <div
+                class="whitespace-pre-wrap rounded-2xl rounded-ee-md bg-primary px-4 py-2.5 text-sm leading-relaxed text-primary-foreground shadow-soft"
+                dir="auto"
               >
-                {formatTime(msg.timestamp)}
-              </p>
-            </div>
-
-            {#if msg.sender === 'user'}
-              <div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                <User class="size-3.5 text-primary" />
+                {msg.text}
               </div>
-            {/if}
+              <span class="px-1 text-[0.65rem] text-muted-foreground">{formatTime(msg.timestamp)}</span>
+            </div>
           </div>
-        </div>
+        {:else}
+          <div class="flex animate-fade-in-up items-start gap-2.5">
+            <AssistantAvatar size="sm" class="mt-0.5" />
+            <div class="flex min-w-0 max-w-[85%] flex-col gap-1">
+              <div
+                class="rounded-2xl rounded-ss-md border border-border/70 bg-card px-4 py-3 text-sm leading-relaxed shadow-soft"
+                dir="auto"
+              >
+                <p class="whitespace-pre-wrap">{msg.text}</p>
+              </div>
+              <span class="px-1 text-[0.65rem] text-muted-foreground">{formatTime(msg.timestamp)}</span>
+            </div>
+          </div>
+        {/if}
       {/each}
 
       {#if isThinking}
-        <div class="flex justify-start">
-          <div class="flex max-w-[80%] gap-2">
-            <div class="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-              <Bot class="size-3.5 text-primary" />
-            </div>
-            <div class="rounded-xl rounded-ee-sm bg-muted px-4 py-2.5">
-              <div class="flex items-center gap-1.5">
-                <span class="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0s]"></span>
-                <span class="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0.15s]"></span>
-                <span class="inline-block size-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:0.3s]"></span>
-              </div>
-            </div>
+        <div class="flex animate-fade-in items-start gap-2.5">
+          <AssistantAvatar size="sm" class="mt-0.5" />
+          <div
+            class="flex items-center rounded-2xl rounded-ss-md border border-border/70 bg-card px-4 py-3.5 shadow-soft"
+          >
+            <TypingIndicator />
           </div>
         </div>
       {/if}
 
       {#if messages.length === 1 && messages[0].id === -1}
-        <div class="flex flex-col items-center justify-center gap-4 pt-6">
-          <div class="flex size-14 items-center justify-center rounded-full bg-primary/10">
-            <MessageSquareText class="size-7 text-primary" />
-          </div>
-          <p class="text-sm text-muted-foreground text-center">
-            ابدأ محادثة مع مساعدك المالي الذكي
-          </p>
+        <div class="flex flex-col items-center gap-3 pt-2">
+          <p class="text-xs text-muted-foreground">جرّب أحد الأمثلة</p>
           <div class="flex flex-wrap justify-center gap-2">
             {#each suggestions as suggestion (suggestion)}
               <button
-                class="rounded-full border px-3 py-1.5 text-xs hover:bg-muted transition-colors text-muted-foreground"
+                class="rounded-full border border-border/70 bg-card px-3.5 py-2 text-xs shadow-soft transition-all hover:border-primary/40 hover:bg-accent/50 active:scale-95"
                 onclick={() => sendMessage(suggestion)}
               >
                 {suggestion}
@@ -201,36 +197,39 @@
         </div>
       {/if}
     </div>
+  </div>
 
-    <div class="border-t pt-3">
-      <div class="flex flex-wrap gap-2 mb-3">
-        {#each suggestions as suggestion (suggestion)}
-          <button
-            class="rounded-full border px-3 py-1.5 text-xs hover:bg-muted transition-colors text-muted-foreground"
-            onclick={() => sendMessage(suggestion)}
-          >
-            {suggestion}
-          </button>
-        {/each}
-      </div>
-
-      <div class="flex items-center gap-2">
+  <!-- Composer -->
+  <div
+    class="border-t border-border/60 bg-background/80 px-4 pb-[calc(env(safe-area-inset-bottom)+5.5rem)] pt-3 backdrop-blur-xl md:pb-4 md:pt-4"
+  >
+    <div class="mx-auto w-full max-w-3xl">
+      <div
+        class="flex items-center gap-2 rounded-2xl border border-border/70 bg-card p-1.5 shadow-soft transition-colors focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/15"
+      >
         <Input
           bind:ref={inputRef}
           bind:value={inputValue}
-          placeholder="اكتب رسالتك هنا..."
+          placeholder="اكتب رسالتك هنا…"
           onkeydown={handleKeydown}
           disabled={isThinking}
-          class="flex-1"
+          class="h-11 flex-1 border-0 bg-transparent px-3 shadow-none focus-visible:ring-0 dark:bg-transparent"
+          dir="auto"
         />
         <Button
           onclick={() => sendMessage(inputValue)}
           disabled={isThinking || !inputValue.trim()}
           size="icon"
+          class="size-11 shrink-0 rounded-xl transition-transform active:scale-90"
+          aria-label="إرسال"
         >
-          <Send class="size-4" />
+          <Send class="size-4.5 cn-rtl-flip" />
         </Button>
       </div>
+      <p class="mt-2 flex items-center justify-center gap-1.5 text-center text-[0.7rem] text-muted-foreground">
+        <Sparkles class="size-3" />
+        نسخة تجريبية للواجهة — سيتم تفعيل المساعد قريباً
+      </p>
     </div>
   </div>
 </div>

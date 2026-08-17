@@ -12,23 +12,24 @@
 <script lang="ts">
   import type { PageProps as InertiaPageProps } from '@inertiajs/core';
   import { usePage, router } from '@inertiajs/svelte';
-  import ArrowDownRight from 'lucide-svelte/icons/arrow-down-right';
-  import ArrowUpRight from 'lucide-svelte/icons/arrow-up-right';
   import ChevronLeft from 'lucide-svelte/icons/chevron-left';
   import ChevronRight from 'lucide-svelte/icons/chevron-right';
-  import Pencil from 'lucide-svelte/icons/pencil';
   import Plus from 'lucide-svelte/icons/plus';
   import Search from 'lucide-svelte/icons/search';
-  import Trash from 'lucide-svelte/icons/trash';
+  import X from 'lucide-svelte/icons/x';
+  import Receipt from 'lucide-svelte/icons/receipt';
   import AddTransactionDrawer from '@/components/AddTransactionDrawer.svelte';
   import AppHead from '@/components/AppHead.svelte';
-  import Heading from '@/components/Heading.svelte';
+  import TransactionRow from '@/components/transactions/TransactionRow.svelte';
   import { Button } from '@/components/ui/button';
   import { Input } from '@/components/ui/input';
   import { Skeleton } from '@/components/ui/skeleton';
   import * as Select from '@/components/ui/select';
-  import * as Table from '@/components/ui/table';
+  import * as Tabs from '@/components/ui/tabs';
+  import * as AlertDialog from '@/components/ui/alert-dialog';
+  import * as Empty from '@/components/ui/empty';
   import { index as transactionsIndex, destroy } from '@/routes/transactions';
+  import { formatRelativeDate, formatMoney } from '@/lib/format';
   import type { Category, Transaction } from '@/types';
 
   interface PaginationLink {
@@ -66,7 +67,6 @@
   const page = usePage<PageProps>();
   const paginator = $derived(page.props.transactions);
   const categories = $derived(page.props.categories);
-  const filters = $derived(page.props.filters);
   const transactions = $derived(paginator.data);
   const isLoading = $derived(!paginator || !paginator.data);
 
@@ -74,30 +74,58 @@
   let searchInput = $state(page.props.filters.search ?? '');
   let filterType = $state(page.props.filters.type ?? '');
   let filterCategory = $state(page.props.filters.category_id ?? '');
-  let deleteConfirmId = $state<number | null>(null);
+  let deleteTarget = $state<Transaction | null>(null);
   let editTransaction = $state<Transaction | null>(null);
   let perPage = $state(String(page.props.transactions?.per_page ?? '15'));
 
   let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
+  const hasActiveFilters = $derived(
+    !!searchInput || !!filterType || !!filterCategory,
+  );
+
+  // Group transactions by day, preserving server order.
+  const groups = $derived.by(() => {
+    const map = new Map<string, Transaction[]>();
+
+    for (const tx of transactions) {
+      const list = map.get(tx.date);
+
+      if (list) {
+        list.push(tx);
+      } else {
+        map.set(tx.date, [tx]);
+      }
+    }
+
+    return Array.from(map, ([date, items]) => ({ date, items }));
+  });
+
+  function groupNet(items: Transaction[]): number {
+    return items.reduce(
+      (sum, t) => sum + (t.type === 'income' ? t.amount : -t.amount),
+      0,
+    );
+  }
+
   function navigate(params: Record<string, string>) {
     const query: Record<string, string> = {};
 
     if (filterType) {
-query.type = filterType;
-}
+      query.type = filterType;
+    }
 
     if (filterCategory) {
-query.category_id = filterCategory;
-}
+      query.category_id = filterCategory;
+    }
 
     if (searchInput) {
-query.search = searchInput;
-}
+      query.search = searchInput;
+    }
 
     if (perPage) {
-query.per_page = perPage;
-}
+      query.per_page = perPage;
+    }
 
     for (const [key, value] of Object.entries(params)) {
       if (value) {
@@ -118,12 +146,17 @@ query.per_page = perPage;
     searchInput = target.value;
 
     if (searchTimer) {
-clearTimeout(searchTimer);
-}
+      clearTimeout(searchTimer);
+    }
 
     searchTimer = setTimeout(() => {
       navigate({ search: searchInput });
     }, 400);
+  }
+
+  function clearSearch() {
+    searchInput = '';
+    navigate({ search: '' });
   }
 
   function handleTypeChange(type: string) {
@@ -136,6 +169,13 @@ clearTimeout(searchTimer);
     navigate({ category_id: categoryId });
   }
 
+  function clearAllFilters() {
+    searchInput = '';
+    filterType = '';
+    filterCategory = '';
+    navigate({ search: '', type: '', category_id: '' });
+  }
+
   function goToPage(pageNum: number) {
     navigate({ page: String(pageNum) });
   }
@@ -145,19 +185,21 @@ clearTimeout(searchTimer);
     navigate({ per_page: perPage, page: '1' });
   }
 
-  function confirmDelete(id: number) {
-    deleteConfirmId = id;
+  function requestDelete(tx: Transaction) {
+    deleteTarget = tx;
   }
 
-  function cancelDelete() {
-    deleteConfirmId = null;
-  }
+  function executeDelete() {
+    const target = deleteTarget;
 
-  function executeDelete(id: number) {
-    router.delete(destroy.url(id), {
+    if (!target) {
+      return;
+    }
+
+    router.delete(destroy.url(target.id), {
       preserveScroll: true,
       onSuccess: () => {
-        deleteConfirmId = null;
+        deleteTarget = null;
         router.reload({ only: ['transactions'] });
       },
     });
@@ -192,309 +234,205 @@ clearTimeout(searchTimer);
 
     return pages;
   }
+
+  const selectedCategoryName = $derived(
+    filterCategory
+      ? (categories.find((c) => c.id === parseInt(filterCategory))?.name ?? null)
+      : null,
+  );
 </script>
 
 <AppHead title="المعاملات" />
 
-<div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
-  <div class="flex items-center justify-between">
-    <Heading
-      title="المعاملات"
-      description="جميع مصروفاتك وإيراداتك"
-    />
-    <Button onclick={() => (drawerOpen = true)}>
+<div class="flex flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
+  <!-- Header -->
+  <div class="flex items-start justify-between gap-3">
+    <div class="space-y-1">
+      <div class="flex items-center gap-2.5">
+        <h1 class="text-xl font-semibold tracking-tight md:text-2xl">المعاملات</h1>
+        {#if !isLoading}
+          <span class="rounded-full bg-muted px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground">
+            {paginator.total}
+          </span>
+        {/if}
+      </div>
+      <p class="text-sm text-muted-foreground">جميع مصروفاتك وإيراداتك في مكان واحد</p>
+    </div>
+
+    <Button class="shadow-soft active:scale-95" onclick={() => (drawerOpen = true)}>
       <Plus class="size-4" />
-      إضافة معاملة
+      <span class="hidden sm:inline">إضافة معاملة</span>
+      <span class="sm:hidden">إضافة</span>
     </Button>
   </div>
 
-  <div class="flex flex-wrap items-center gap-3 rounded-xl border p-3">
-    <div class="relative flex-1 min-w-[200px]">
-      <Search class="absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        class="pr-8"
-        placeholder="بحث..."
-        value={searchInput}
-        oninput={handleSearchInput}
-      />
+  <!-- Filter / search bar -->
+  <div class="sticky top-0 z-20 -mx-4 flex flex-col gap-3 border-b border-border/60 bg-background/85 px-4 pb-3 pt-1 backdrop-blur-md md:-mx-6 md:px-6">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <!-- Search -->
+      <div class="relative flex-1">
+        <Search class="pointer-events-none absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          class="h-10 ps-9 pe-9"
+          placeholder="ابحث في المعاملات..."
+          value={searchInput}
+          oninput={handleSearchInput}
+        />
+        {#if searchInput}
+          <button
+            type="button"
+            class="absolute end-2.5 top-1/2 flex size-5 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            aria-label="مسح البحث"
+            onclick={clearSearch}
+          >
+            <X class="size-3.5" />
+          </button>
+        {/if}
+      </div>
+
+      <!-- Category filter -->
+      <div class="sm:w-44">
+        <Select.Root
+          value={filterCategory}
+          onValueChange={(val) => handleCategoryChange(val ?? '')}
+        >
+          <Select.Trigger class="h-10 w-full justify-between">
+            {#if selectedCategoryName}
+              {selectedCategoryName}
+            {:else}
+              <span class="text-muted-foreground">كل الفئات</span>
+            {/if}
+          </Select.Trigger>
+          <Select.Content>
+            {#each categories as cat (cat.id)}
+              <Select.Item value={cat.id.toString()} label={cat.name} />
+            {/each}
+          </Select.Content>
+        </Select.Root>
+      </div>
     </div>
 
-    <div class="flex items-center gap-1 rounded-lg border p-1">
-      <button
-        class="rounded-md px-3 py-1 text-sm {!filterType ? 'bg-muted font-medium' : 'text-muted-foreground'}"
-        onclick={() => handleTypeChange('')}
+    <!-- Type segmented control -->
+    <div class="flex items-center gap-2">
+      <Tabs.Root
+        value={filterType || 'all'}
+        onValueChange={(v) => handleTypeChange(v === 'all' ? '' : v)}
+        class="flex-1"
       >
-        الكل
-      </button>
-      <button
-        class="rounded-md px-3 py-1 text-sm {filterType === 'expense' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 font-medium' : 'text-muted-foreground'}"
-        onclick={() => handleTypeChange('expense')}
-      >
-        مصروفات
-      </button>
-      <button
-        class="rounded-md px-3 py-1 text-sm {filterType === 'income' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 font-medium' : 'text-muted-foreground'}"
-        onclick={() => handleTypeChange('income')}
-      >
-        إيرادات
-      </button>
-    </div>
+        <Tabs.List class="w-full">
+          <Tabs.Trigger value="all" class="flex-1">الكل</Tabs.Trigger>
+          <Tabs.Trigger value="expense" class="flex-1 data-active:text-expense">مصروفات</Tabs.Trigger>
+          <Tabs.Trigger value="income" class="flex-1 data-active:text-income">إيرادات</Tabs.Trigger>
+        </Tabs.List>
+      </Tabs.Root>
 
-    <div class="min-w-[160px]">
-      <Select.Root
-        value={filterCategory}
-        onValueChange={(val) => handleCategoryChange(val ?? '')}
-      >
-        <Select.Trigger class="w-full justify-between">
-          {#if filterCategory}
-            {@const cat = categories.find((c) => c.id === parseInt(filterCategory))}
-            {cat?.name ?? 'كل الفئات'}
-          {:else}
-            <span class="text-muted-foreground">كل الفئات</span>
-          {/if}
-        </Select.Trigger>
-        <Select.Content>
-          {#each categories as cat (cat.id)}
-            <Select.Item value={cat.id.toString()} label={cat.name} />
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      {#if hasActiveFilters}
+        <Button
+          variant="ghost"
+          size="sm"
+          class="shrink-0 text-muted-foreground"
+          onclick={clearAllFilters}
+        >
+          <X class="size-3.5" />
+          مسح
+        </Button>
+      {/if}
     </div>
   </div>
 
+  <!-- Content -->
   {#if isLoading}
-    <div class="rounded-xl border">
-      <div class="hidden md:block overflow-x-auto">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.Head class="text-right">التاريخ</Table.Head>
-              <Table.Head class="text-right">الوصف</Table.Head>
-              <Table.Head class="text-right">الفئة</Table.Head>
-              <Table.Head class="text-right">النوع</Table.Head>
-              <Table.Head class="text-right">المبلغ</Table.Head>
-              <Table.Head class="text-right w-[80px]"></Table.Head>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {#each Array(8) as _}
-              <Table.Row>
-                <Table.Cell><Skeleton class="h-4 w-20" /></Table.Cell>
-                <Table.Cell><Skeleton class="h-4 w-32" /></Table.Cell>
-                <Table.Cell><Skeleton class="h-5 w-16 rounded-full" /></Table.Cell>
-                <Table.Cell><Skeleton class="h-5 w-14 rounded-full" /></Table.Cell>
-                <Table.Cell><Skeleton class="h-4 w-20" /></Table.Cell>
-                <Table.Cell><Skeleton class="h-4 w-12" /></Table.Cell>
-              </Table.Row>
-            {/each}
-          </Table.Body>
-        </Table.Root>
-      </div>
-      <div class="md:hidden p-3 space-y-3">
-        {#each Array(5) as _}
-          <div class="rounded-xl border p-3 space-y-2">
-            <div class="flex items-center justify-between">
-              <Skeleton class="h-3 w-16" />
-              <Skeleton class="h-5 w-14 rounded-full" />
-            </div>
-            <Skeleton class="h-4 w-32" />
-            <div class="flex items-center justify-between">
-              <Skeleton class="h-5 w-14 rounded-full" />
-              <Skeleton class="h-4 w-20" />
-            </div>
-          </div>
-        {/each}
-      </div>
-    </div>
-  {:else}
-    <!-- Desktop table -->
-    <div class="hidden md:block overflow-x-auto rounded-xl border">
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.Head class="text-right">التاريخ</Table.Head>
-            <Table.Head class="text-right">الوصف</Table.Head>
-            <Table.Head class="text-right">الفئة</Table.Head>
-            <Table.Head class="text-right">النوع</Table.Head>
-            <Table.Head class="text-right">المبلغ</Table.Head>
-            <Table.Head class="text-right w-[80px]"></Table.Head>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {#each transactions as tx (tx.id)}
-            <Table.Row>
-              <Table.Cell class="text-right text-muted-foreground">{tx.date}</Table.Cell>
-              <Table.Cell class="text-right font-medium">{tx.description}</Table.Cell>
-              <Table.Cell class="text-right">
-                {#if tx.category}
-                  <span
-                    class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                    style="background-color: {tx.category.color}20; color: {tx.category.color}"
-                  >
-                    {tx.category.name}
-                  </span>
-                {:else}
-                  <span class="text-muted-foreground">-</span>
-                {/if}
-              </Table.Cell>
-              <Table.Cell class="text-right">
-                <span
-                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {tx.type === 'expense'
-                    ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}"
-                >
-                  {#if tx.type === 'expense'}
-                    <ArrowDownRight class="size-3" />
-                    مصروف
-                  {:else}
-                    <ArrowUpRight class="size-3" />
-                    دخل
-                  {/if}
-                </span>
-              </Table.Cell>
-              <Table.Cell class="text-right tabular-nums font-semibold {tx.type === 'expense'
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-green-600 dark:text-green-400'}">
-                {tx.type === 'expense' ? '-' : '+'}{tx.amount.toLocaleString('ar-SA')} ر.س
-              </Table.Cell>
-              <Table.Cell class="text-right">
-                <div class="flex items-center justify-end gap-1">
-                  {#if deleteConfirmId === tx.id}
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      onclick={() => executeDelete(tx.id)}
-                    >
-                      تأكيد
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onclick={cancelDelete}
-                    >
-                      إلغاء
-                    </Button>
-                  {:else}
-                    <button
-                      class="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                      onclick={() => openEdit(tx)}
-                      aria-label="تعديل"
-                    >
-                      <Pencil class="size-3.5" />
-                    </button>
-                    <button
-                      class="rounded p-1.5 text-muted-foreground hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                      onclick={() => confirmDelete(tx.id)}
-                      aria-label="حذف"
-                    >
-                      <Trash class="size-3.5" />
-                    </button>
-                  {/if}
+    <div class="flex flex-col gap-6">
+      {#each Array(2) as _, gi (gi)}
+        <div class="space-y-2">
+          <Skeleton class="h-3 w-20" />
+          <div class="rounded-2xl border bg-card p-2">
+            {#each Array(4) as _, ri (ri)}
+              <div class="flex items-center gap-3 px-2.5 py-2.5">
+                <Skeleton class="size-10 rounded-xl" />
+                <div class="flex-1 space-y-2">
+                  <Skeleton class="h-3.5 w-32" />
+                  <Skeleton class="h-3 w-20" />
                 </div>
-              </Table.Cell>
-            </Table.Row>
-          {:else}
-            <Table.Row>
-              <Table.Cell colspan="6" class="text-center text-muted-foreground py-8">
-                لا توجد معاملات
-              </Table.Cell>
-            </Table.Row>
-          {/each}
-        </Table.Body>
-      </Table.Root>
+                <Skeleton class="h-4 w-16" />
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/each}
     </div>
-
-    <!-- Mobile cards -->
-    <div class="md:hidden space-y-3">
-      {#each transactions as tx (tx.id)}
-        <div class="rounded-xl border p-3">
-          <div class="flex items-start justify-between gap-2 mb-2">
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium truncate">{tx.description}</p>
-              <p class="text-xs text-muted-foreground">{tx.date}</p>
-            </div>
-            <span
-              class="tabular-nums text-sm font-semibold shrink-0 {tx.type === 'expense'
-                ? 'text-red-600 dark:text-red-400'
-                : 'text-green-600 dark:text-green-400'}"
-            >
-              {tx.type === 'expense' ? '-' : '+'}{tx.amount.toLocaleString('ar-SA')} ر.س
+  {:else if transactions.length === 0}
+    <Empty.Root class="mt-4 py-16">
+      <Empty.Header>
+        <Empty.Media
+          variant="icon"
+          class="size-14 rounded-2xl bg-muted text-muted-foreground"
+        >
+          <Receipt class="size-6" />
+        </Empty.Media>
+        <Empty.Title>
+          {hasActiveFilters ? 'لا توجد نتائج مطابقة' : 'لا توجد معاملات بعد'}
+        </Empty.Title>
+        <Empty.Description>
+          {hasActiveFilters
+            ? 'جرّب تعديل عوامل التصفية أو البحث بكلمات أخرى.'
+            : 'ابدأ بتسجيل أول مصروف أو دخل لتتبّع أموالك.'}
+        </Empty.Description>
+      </Empty.Header>
+      <Empty.Content>
+        {#if hasActiveFilters}
+          <Button variant="outline" onclick={clearAllFilters}>
+            <X class="size-4" />
+            مسح عوامل التصفية
+          </Button>
+        {:else}
+          <Button onclick={() => (drawerOpen = true)}>
+            <Plus class="size-4" />
+            إضافة معاملة
+          </Button>
+        {/if}
+      </Empty.Content>
+    </Empty.Root>
+  {:else}
+    <div class="flex flex-col gap-6">
+      {#each groups as group (group.date)}
+        {@const net = groupNet(group.items)}
+        <section class="space-y-2">
+          <div class="flex items-center justify-between px-1">
+            <h2 class="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              {formatRelativeDate(group.date)}
+            </h2>
+            <span class="text-xs font-medium tabular-nums text-muted-foreground">
+              {net >= 0 ? '+' : '−'}{formatMoney(Math.abs(net))}
             </span>
           </div>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              {#if tx.category}
-                <span
-                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
-                  style="background-color: {tx.category.color}20; color: {tx.category.color}"
-                >
-                  {tx.category.name}
-                </span>
-              {:else}
-                <span class="text-xs text-muted-foreground">-</span>
+
+          <div class="rounded-2xl border bg-card p-1.5 shadow-soft">
+            {#each group.items as tx, i (tx.id)}
+              {#if i > 0}
+                <div class="mx-3 h-px bg-border/50"></div>
               {/if}
-              <span
-                class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium {tx.type === 'expense'
-                  ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                  : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'}"
-              >
-                {#if tx.type === 'expense'}
-                  <ArrowDownRight class="size-3" />
-                  مصروف
-                {:else}
-                  <ArrowUpRight class="size-3" />
-                  دخل
-                {/if}
-              </span>
-            </div>
-            <div class="flex items-center gap-1">
-              {#if deleteConfirmId === tx.id}
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onclick={() => executeDelete(tx.id)}
-                >
-                  تأكيد
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onclick={cancelDelete}
-                >
-                  إلغاء
-                </Button>
-              {:else}
-                <button
-                  class="rounded p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
-                  onclick={() => openEdit(tx)}
-                  aria-label="تعديل"
-                >
-                  <Pencil class="size-3.5" />
-                </button>
-                <button
-                  class="rounded p-1.5 text-muted-foreground hover:bg-red-100 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400"
-                  onclick={() => confirmDelete(tx.id)}
-                  aria-label="حذف"
-                >
-                  <Trash class="size-3.5" />
-                </button>
-              {/if}
-            </div>
+              <TransactionRow
+                transaction={tx}
+                style={`animation-delay: ${Math.min(i * 35, 300)}ms`}
+                onEdit={openEdit}
+                onDelete={requestDelete}
+              />
+            {/each}
           </div>
-        </div>
-      {:else}
-        <div class="flex h-32 items-center justify-center rounded-xl border">
-          <p class="text-sm text-muted-foreground">لا توجد معاملات</p>
-        </div>
+        </section>
       {/each}
     </div>
   {/if}
 
-  {#if paginator.total > 0}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+  <!-- Pagination -->
+  {#if !isLoading && paginator.total > 0}
+    <div class="flex flex-col items-center justify-between gap-3 pt-1 sm:flex-row">
       <p class="text-sm text-muted-foreground">
-        عرض {paginator.from ?? 0}-{paginator.to ?? 0} من إجمالي {paginator.total} معاملة
+        عرض <span class="font-medium text-foreground tabular-nums">{paginator.from ?? 0}</span>–<span class="font-medium text-foreground tabular-nums">{paginator.to ?? 0}</span>
+        من <span class="font-medium text-foreground tabular-nums">{paginator.total}</span> معاملة
       </p>
+
       <div class="flex items-center gap-2">
         <div class="flex items-center gap-1.5">
           <span class="text-xs text-muted-foreground">لكل صفحة</span>
@@ -502,7 +440,7 @@ clearTimeout(searchTimer);
             value={perPage}
             onValueChange={(val) => handlePerPageChange(val)}
           >
-            <Select.Trigger class="w-[70px] justify-between text-sm">
+            <Select.Trigger class="h-9 w-[68px] justify-between text-sm">
               {perPage}
             </Select.Trigger>
             <Select.Content>
@@ -512,42 +450,79 @@ clearTimeout(searchTimer);
             </Select.Content>
           </Select.Root>
         </div>
-        <div class="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={paginator.current_page <= 1}
-            onclick={() => goToPage(paginator.current_page - 1)}
-          >
-            <ChevronRight class="size-4" />
-            السابق
-          </Button>
 
-          {#each getPageNumbers() as pageNum (pageNum)}
+        {#if paginator.last_page > 1}
+          <div class="flex items-center gap-1">
             <Button
-              variant={pageNum === paginator.current_page ? 'default' : 'outline'}
-              size="sm"
-              class="min-w-[2.25rem]"
-              onclick={() => goToPage(pageNum)}
+              variant="outline"
+              size="icon"
+              class="size-9"
+              aria-label="السابق"
+              disabled={paginator.current_page <= 1}
+              onclick={() => goToPage(paginator.current_page - 1)}
             >
-              {pageNum}
+              <ChevronRight class="size-4" />
             </Button>
-          {/each}
 
-          <Button
-            variant="outline"
-            size="sm"
-            disabled={paginator.current_page >= paginator.last_page}
-            onclick={() => goToPage(paginator.current_page + 1)}
-          >
-            التالي
-            <ChevronLeft class="size-4" />
-          </Button>
-        </div>
+            {#each getPageNumbers() as pageNum (pageNum)}
+              <Button
+                variant={pageNum === paginator.current_page ? 'default' : 'outline'}
+                size="icon"
+                class="size-9 tabular-nums"
+                onclick={() => goToPage(pageNum)}
+              >
+                {pageNum}
+              </Button>
+            {/each}
+
+            <Button
+              variant="outline"
+              size="icon"
+              class="size-9"
+              aria-label="التالي"
+              disabled={paginator.current_page >= paginator.last_page}
+              onclick={() => goToPage(paginator.current_page + 1)}
+            >
+              <ChevronLeft class="size-4" />
+            </Button>
+          </div>
+        {/if}
       </div>
     </div>
   {/if}
 </div>
+
+<!-- Delete confirmation -->
+<AlertDialog.Root
+  open={deleteTarget !== null}
+  onOpenChange={(v) => {
+    if (!v) {
+      deleteTarget = null;
+    }
+  }}
+>
+  <AlertDialog.Content>
+    <AlertDialog.Header>
+      <AlertDialog.Title>حذف المعاملة؟</AlertDialog.Title>
+      <AlertDialog.Description>
+        {#if deleteTarget}
+          سيتم حذف
+          "{deleteTarget.description?.trim() || deleteTarget.category?.name || 'هذه المعاملة'}"
+          نهائياً. لا يمكن التراجع عن هذا الإجراء.
+        {/if}
+      </AlertDialog.Description>
+    </AlertDialog.Header>
+    <AlertDialog.Footer>
+      <AlertDialog.Cancel>إلغاء</AlertDialog.Cancel>
+      <AlertDialog.Action
+        class="bg-destructive text-white hover:bg-destructive/90"
+        onclick={executeDelete}
+      >
+        حذف
+      </AlertDialog.Action>
+    </AlertDialog.Footer>
+  </AlertDialog.Content>
+</AlertDialog.Root>
 
 <AddTransactionDrawer
   open={drawerOpen}
